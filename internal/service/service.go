@@ -13,5 +13,5 @@ func New(repositories *repository.Repository) *Service {
 }
 
 type User interface {
-	Create()
+	Create(passportNumber string)
 }

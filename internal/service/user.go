@@ -10,5 +10,6 @@ func NewUserService(repository repository.UserRepository) *UserService {
 	return &UserService{repository}
 }
 
-func (s *UserService) Create() {
+func (s *UserService) Create(passportNumber string) {
+
 }
