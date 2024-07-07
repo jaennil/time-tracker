@@ -11,7 +11,7 @@ type ZapLogger struct {
 	logger *zap.SugaredLogger
 }
 
-func New() Loggable {
+func NewZapLogger() Loggable {
 	config := zap.NewDevelopmentConfig()
 
 	config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
@@ -46,4 +46,8 @@ func (l *ZapLogger) Error(msg string, keysAndValues ...interface{}) {
 
 func (l *ZapLogger) Fatal(msg string, keysAndValues ...interface{}) {
 	l.logger.Fatalw(msg, keysAndValues...)
+}
+
+func (l *ZapLogger) Sync() {
+	l.logger.Sync()
 }
