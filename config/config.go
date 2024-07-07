@@ -3,11 +3,8 @@ package config
 import "github.com/spf13/viper"
 
 type Config struct {
-	DBHost     string `mapstructure:"TIMETRACKER_DB_HOST"`
-	DBPort     int    `mapstructure:"TIMETRACKER_DB_PORT"`
-	DBUser     string `mapstructure:"TIMETRACKER_DB_USER"`
-	DBName     string `mapstructure:"TIMETRACKER_DB_NAME"`
-	DBPassword string `mapstructure:"TIMETRACKER_DB_PASS"`
+	Port   int    `mapstructure:"TIMETRACKER_API_PORT"`
+	PG_DSN string `mapstructure:"TIMETRACKER_PG_DSN"`
 }
 
 func NewConfig() (*Config, error) {

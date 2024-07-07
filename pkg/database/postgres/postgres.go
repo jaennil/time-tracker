@@ -2,14 +2,11 @@ package postgres
 
 import (
 	"context"
-	"fmt"
-
 	"github.com/jackc/pgx/v5"
-	"github.com/jaennil/time-tracker/pkg/database"
 )
 
-func NewPostgres(config database.Config) (*pgx.Conn, error) {
-	conn, err := pgx.Connect(context.Background(), dsn(config))
+func NewPostgres(dsn string) (*pgx.Conn, error) {
+	conn, err := pgx.Connect(context.Background(), dsn)
 	if err != nil {
 		return nil, err
 	}
@@ -20,9 +17,4 @@ func NewPostgres(config database.Config) (*pgx.Conn, error) {
 	}
 
 	return conn, nil
-}
-
-func dsn(config database.Config) string {
-	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
-		config.User, config.Password, config.Host, config.Port, config.Name, config.SSLMode)
 }
