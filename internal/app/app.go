@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"errors"
+	"fmt"
 	"go.uber.org/zap"
 	"os"
 	"os/signal"
@@ -37,7 +38,7 @@ func Run(config *config.Config) {
 	}
 
 	log.Info("connecting to database")
-	db, err := postgres.NewPostgres(config.PG_DSN)
+	db, err := postgres.NewPostgres(config)
 	if err != nil {
 		log.Fatal("failed to connect to database: ", err)
 	}
@@ -54,9 +55,7 @@ func Run(config *config.Config) {
 	log.Info("creating migration instance")
 	m, err := migrate.New(
 		"file://migrations",
-		// TODO: replace database config with fields instead of DSN and
-		// build dsn from config here
-		"pgx://jaennil:naen@localhost:5432/time_tracker?sslmode=disable",
+		fmt.Sprintf("pgx://%s:%s@%s:%d/%s?sslmode=disable", config.DBUser, config.DBPassword, config.DBHost, config.DBPort, config.DBName),
 	)
 	if err != nil {
 		log.Fatal("failed to create Migrate instance", err)
