@@ -44,3 +44,24 @@ func (r *UserRepository) Delete(id int64) error {
 
 	return nil
 }
+
+func (r *UserRepository) Update(id int64, user *model.User) error {
+	query := `UPDATE users
+				SET name=$1, surname=$2, patronymic=$3, address=$4, passport_series=$5, passport_number=$6
+				WHERE user_id = $7`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	result, err := r.db.Exec(ctx, query, user.Name, user.Surname, user.Patronymic, user.Address, user.PassportSeries, user.PassportNumber, id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected := result.RowsAffected()
+	if rowsAffected == 0 {
+		return RecordNotFound
+	}
+
+	return nil
+}

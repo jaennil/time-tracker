@@ -40,3 +40,7 @@ func (s *UserService) Create(passport string) (*model.User, error) {
 func (s *UserService) Delete(id int64) error {
 	return s.userRepository.Delete(id)
 }
+
+func (s *UserService) Update(id int64, user *model.User) error {
+	return s.userRepository.Update(id, user)
+}
