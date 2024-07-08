@@ -47,7 +47,7 @@ func (r *UserRepository) Delete(id int64) error {
 
 func (r *UserRepository) Update(id int64, user *model.User) error {
 	query := `UPDATE users
-				SET name=$1, surname=$2, patronymic=$3, address=$4, passport_series=$5, passport_number=$6
+				SET name = $1, surname = $2, patronymic = $3, address = $4, passport_series = $5, passport_number = $6
 				WHERE user_id = $7`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -66,18 +66,36 @@ func (r *UserRepository) Update(id int64, user *model.User) error {
 	return nil
 }
 
-func (r *UserRepository) Get(pagination *model.Pagination) ([]model.User, error) {
+func (r *UserRepository) Get(pagination *model.Pagination, filter *model.User) ([]model.User, error) {
 	query := `SELECT user_id, name, surname, patronymic, address, passport_series, passport_number
 				FROM users
+				WHERE (user_id = $1 OR $1 = 0) AND
+					(name = $2 OR $2 = '') AND
+					(surname = $3 OR $3 = '') AND
+					(patronymic = $4 OR $4 = '') AND
+					(address = $5 OR $5 = '') AND
+					(passport_series = $6 OR $6 = '') AND
+					(passport_number = $7 OR $7 = '')
 				ORDER BY user_id
-				LIMIT $1 OFFSET $2`
+				LIMIT $8 OFFSET $9`
 
 	offset := (pagination.Page - 1) * pagination.PageSize
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	rows, err := r.db.Query(ctx, query, pagination.PageSize, offset)
+	rows, err := r.db.Query(ctx,
+		query,
+		filter.Id,
+		filter.Name,
+		filter.Surname,
+		filter.Patronymic,
+		filter.Address,
+		filter.PassportSeries,
+		filter.PassportNumber,
+		pagination.PageSize,
+		offset,
+	)
 	if err != nil {
 		return nil, err
 	}

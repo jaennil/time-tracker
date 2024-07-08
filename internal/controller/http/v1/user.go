@@ -133,7 +133,6 @@ func (r *userRoutes) get(c *gin.Context) {
 	r.logger.Debug("hit endpoint", zap.String("url", c.FullPath()), zap.String("method", c.Request.Method))
 
 	pageStr := c.DefaultQuery("page", "1")
-	pageSizeStr := c.DefaultQuery("page_size", "100")
 	page, err := strconv.Atoi(pageStr)
 	if err != nil {
 		errorResponse(c, http.StatusBadRequest, "invalid page number")
@@ -144,6 +143,7 @@ func (r *userRoutes) get(c *gin.Context) {
 		errorResponse(c, http.StatusBadRequest, "page must be positive number")
 		return
 	}
+	pageSizeStr := c.DefaultQuery("page_size", "100")
 	pageSize, err := strconv.Atoi(pageSizeStr)
 	if err != nil {
 		errorResponse(c, http.StatusBadRequest, "invalid page size")
@@ -154,10 +154,31 @@ func (r *userRoutes) get(c *gin.Context) {
 		errorResponse(c, http.StatusBadRequest, "page size must be positive number")
 		return
 	}
-	pagination := &model.Pagination{Page: page, PageSize: pageSize}
+	userIdStr := c.Query("user_id")
+	var userId int
+	if userIdStr == "" {
+		userId = 0
+	} else {
+		userId, err = strconv.Atoi(userIdStr)
+		if err != nil {
+			errorResponse(c, http.StatusBadRequest, "invalid user id")
+			return
+		}
+	}
+	filter := &model.User{
+		Id:             int64(userId),
+		PassportSeries: c.Query("passport_series"),
+		PassportNumber: c.Query("passport_number"),
+		Name:           c.Query("name"),
+		Surname:        c.Query("surname"),
+		Patronymic:     c.Query("patronymic"),
+		Address:        c.Query("address"),
+	}
 
-	users, err := r.service.Get(pagination)
+	pagination := &model.Pagination{Page: page, PageSize: pageSize}
+	users, err := r.service.Get(pagination, filter)
 	if err != nil {
+		r.logger.Error("failed to get users", err)
 		errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
 		return
 	}
