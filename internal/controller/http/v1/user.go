@@ -52,7 +52,7 @@ func (r *userRoutes) create(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, user)
+	c.JSON(http.StatusCreated, gin.H{"message": "user created", "id": user.Id})
 }
 
 func (r *userRoutes) delete(c *gin.Context) {
@@ -81,5 +81,5 @@ func (r *userRoutes) delete(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, "user deleted")
+	c.JSON(http.StatusOK, gin.H{"message": "user deleted"})
 }
