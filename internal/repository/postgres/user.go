@@ -66,13 +66,18 @@ func (r *UserRepository) Update(id int64, user *model.User) error {
 	return nil
 }
 
-func (r *UserRepository) Get() ([]model.User, error) {
-	query := `SELECT user_id, name, surname, patronymic, address, passport_series, passport_number FROM users`
+func (r *UserRepository) Get(pagination *model.Pagination) ([]model.User, error) {
+	query := `SELECT user_id, name, surname, patronymic, address, passport_series, passport_number
+				FROM users
+				ORDER BY user_id
+				LIMIT $1 OFFSET $2`
+
+	offset := (pagination.Page - 1) * pagination.PageSize
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	rows, err := r.db.Query(ctx, query)
+	rows, err := r.db.Query(ctx, query, pagination.PageSize, offset)
 	if err != nil {
 		return nil, err
 	}

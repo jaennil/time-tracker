@@ -19,5 +19,5 @@ type User interface {
 	Create(passport string) (*model.User, error)
 	Delete(id int64) error
 	Update(id int64, user *model.User) error
-	Get() ([]model.User, error)
+	Get(pagination *model.Pagination) ([]model.User, error)
 }

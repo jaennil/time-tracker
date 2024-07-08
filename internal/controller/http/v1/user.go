@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/go-playground/validator/v10"
 	"github.com/jaennil/time-tracker/internal/model"
+	"strconv"
 
 	"github.com/jaennil/time-tracker/internal/repository/postgres"
 	"go.uber.org/zap"
@@ -131,9 +132,32 @@ func (r *userRoutes) update(c *gin.Context) {
 func (r *userRoutes) get(c *gin.Context) {
 	r.logger.Debug("hit endpoint", zap.String("url", c.FullPath()), zap.String("method", c.Request.Method))
 
-	users, err := r.service.Get()
+	pageStr := c.DefaultQuery("page", "1")
+	pageSizeStr := c.DefaultQuery("page_size", "100")
+	page, err := strconv.Atoi(pageStr)
 	if err != nil {
-		// ?
+		errorResponse(c, http.StatusBadRequest, "invalid page number")
+		return
+	}
+	err = r.validate.Var(page, "min=0")
+	if err != nil {
+		errorResponse(c, http.StatusBadRequest, "page must be positive number")
+		return
+	}
+	pageSize, err := strconv.Atoi(pageSizeStr)
+	if err != nil {
+		errorResponse(c, http.StatusBadRequest, "invalid page size")
+		return
+	}
+	err = r.validate.Var(pageSize, "min=0")
+	if err != nil {
+		errorResponse(c, http.StatusBadRequest, "page size must be positive number")
+		return
+	}
+	pagination := &model.Pagination{Page: page, PageSize: pageSize}
+
+	users, err := r.service.Get(pagination)
+	if err != nil {
 		errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
 		return
 	}

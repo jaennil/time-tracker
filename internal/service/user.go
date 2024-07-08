@@ -45,6 +45,6 @@ func (s *UserService) Update(id int64, user *model.User) error {
 	return s.userRepository.Update(id, user)
 }
 
-func (s *UserService) Get() ([]model.User, error) {
-	return s.userRepository.Get()
+func (s *UserService) Get(pagination *model.Pagination) ([]model.User, error) {
+	return s.userRepository.Get(pagination)
 }
