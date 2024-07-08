@@ -24,7 +24,7 @@ func (s *UserService) Create(passport string) (*model.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	// TODO: maybe validate user api response values
+	// TODO: maybe validate user api response values here
 
 	user.PassportNumber = number
 	user.PassportSeries = series
