@@ -18,4 +18,5 @@ func NewRepository(db *pgx.Conn) *Repository {
 
 type User interface {
 	Store(*model.User) error
+	Delete(id int64) error
 }

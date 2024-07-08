@@ -25,3 +25,22 @@ func (r *UserRepository) Store(user *model.User) error {
 	return r.db.QueryRow(ctx, query, user.Name, user.Surname, user.Patronymic, user.Address, user.PassportSeries, user.PassportNumber).
 		Scan(&user.Id)
 }
+
+func (r *UserRepository) Delete(id int64) error {
+	query := `DELETE FROM users WHERE user_id = $1`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	result, err := r.db.Exec(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected := result.RowsAffected()
+	if rowsAffected == 0 {
+		return RecordNotFound
+	}
+
+	return nil
+}

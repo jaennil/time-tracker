@@ -1,6 +1,8 @@
 package http
 
 import (
+	"errors"
+	"github.com/jaennil/time-tracker/internal/repository/postgres"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -19,6 +21,7 @@ func NewUserRoutes(handler *gin.RouterGroup, userService service.User, log logge
 	user := handler.Group("/user")
 	{
 		user.POST("", routes.create)
+		user.DELETE(":id", routes.delete)
 	}
 }
 
@@ -39,4 +42,24 @@ func (r *userRoutes) create(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, user)
+}
+
+func (r *userRoutes) delete(c *gin.Context) {
+	id, err := readIDParam(c)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, "invalid id")
+		return
+	}
+	err = r.service.Delete(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, postgres.RecordNotFound):
+			c.AbortWithStatusJSON(http.StatusNotFound, "user not found")
+		default:
+			c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, "user deleted")
 }
