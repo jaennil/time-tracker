@@ -96,8 +96,19 @@ func (r *userRoutes) update(c *gin.Context) {
 		return
 	}
 
-	var user model.User
-	if err = c.ShouldBindJSON(&user); err != nil {
+	user, err := r.service.GetById(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, postgres.RecordNotFound):
+			errorResponse(c, http.StatusNoContent, "user not found")
+		default:
+			r.logger.Error("failed to update user", err)
+			errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
+		}
+		return
+	}
+
+	if err = c.ShouldBindJSON(user); err != nil {
 		errorResponse(c, http.StatusBadRequest, "invalid json user data")
 		return
 	}
@@ -108,7 +119,7 @@ func (r *userRoutes) update(c *gin.Context) {
 		return
 	}
 
-	err = r.service.Update(id, &user)
+	err = r.service.Update(id, user)
 	if err != nil {
 		switch {
 		case errors.Is(err, postgres.RecordNotFound):
