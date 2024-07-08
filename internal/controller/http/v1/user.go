@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/jaennil/time-tracker/internal/repository/postgres"
-	"go.uber.org/zap"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -34,8 +33,6 @@ func NewUserRoutes(handler *gin.RouterGroup, userService service.User, log logge
 }
 
 func (r *userRoutes) create(c *gin.Context) {
-	r.logger.Debug("hit endpoint", zap.String("url", c.FullPath()), zap.String("method", c.Request.Method))
-
 	var input struct {
 		Passport string `json:"passportNumber" binding:"required"`
 	}
@@ -60,8 +57,6 @@ func (r *userRoutes) create(c *gin.Context) {
 }
 
 func (r *userRoutes) delete(c *gin.Context) {
-	r.logger.Debug("hit endpoint", zap.String("url", c.FullPath()), zap.String("method", c.Request.Method))
-
 	id, err := readIDParam(c)
 	if err != nil {
 		errorResponse(c, http.StatusBadRequest, "invalid id")
@@ -89,8 +84,6 @@ func (r *userRoutes) delete(c *gin.Context) {
 }
 
 func (r *userRoutes) update(c *gin.Context) {
-	r.logger.Debug("hit endpoint", zap.String("url", c.FullPath()), zap.String("method", c.Request.Method))
-
 	id, err := readIDParam(c)
 	if err != nil {
 		errorResponse(c, http.StatusBadRequest, "invalid id")
@@ -130,8 +123,6 @@ func (r *userRoutes) update(c *gin.Context) {
 }
 
 func (r *userRoutes) get(c *gin.Context) {
-	r.logger.Debug("hit endpoint", zap.String("url", c.FullPath()), zap.String("method", c.Request.Method))
-
 	pageStr := c.DefaultQuery("page", "1")
 	page, err := strconv.Atoi(pageStr)
 	if err != nil {
