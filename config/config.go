@@ -3,8 +3,9 @@ package config
 import "github.com/spf13/viper"
 
 type Config struct {
-	Port   int    `mapstructure:"TIMETRACKER_API_PORT"`
-	PG_DSN string `mapstructure:"TIMETRACKER_PG_DSN"`
+	Port       int    `mapstructure:"TIMETRACKER_API_PORT"`
+	PG_DSN     string `mapstructure:"TIMETRACKER_PG_DSN"`
+	UserApiUrl string `mapstructure:"TIMETRACKER_EXTERNAL_API"`
 }
 
 func NewConfig() (*Config, error) {
