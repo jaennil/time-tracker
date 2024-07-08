@@ -29,6 +29,7 @@ func NewUserRoutes(handler *gin.RouterGroup, userService service.User, log logge
 		users.DELETE(":id", routes.delete)
 		users.PATCH(":id", routes.update)
 		users.GET("", routes.get)
+		users.GET(":id", routes.getById)
 	}
 }
 
@@ -175,4 +176,26 @@ func (r *userRoutes) get(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, users)
+}
+
+func (r *userRoutes) getById(c *gin.Context) {
+	id, err := readIDParam(c)
+	if err != nil {
+		errorResponse(c, http.StatusBadRequest, "invalid id")
+		return
+	}
+	err = r.validate.Var(id, "gt=0")
+	if err != nil {
+		errorResponse(c, http.StatusBadRequest, "invalid id")
+		return
+	}
+
+	user, err := r.service.GetById(id)
+	if err != nil {
+		r.logger.Error("failed to get users", err)
+		errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
 }

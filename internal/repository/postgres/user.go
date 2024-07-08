@@ -107,3 +107,24 @@ func (r *UserRepository) Get(pagination *model.Pagination, filter *model.User) (
 
 	return users, nil
 }
+
+func (r *UserRepository) GetById(id int64) (*model.User, error) {
+	query := `SELECT user_id, name, surname, patronymic, address, passport_series, passport_number
+				FROM users
+				WHERE user_id = $1`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := r.db.Query(ctx, query, id)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[model.User])
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}

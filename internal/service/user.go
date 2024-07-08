@@ -48,3 +48,7 @@ func (s *UserService) Update(id int64, user *model.User) error {
 func (s *UserService) Get(pagination *model.Pagination, filter *model.User) ([]model.User, error) {
 	return s.userRepository.Get(pagination, filter)
 }
+
+func (s *UserService) GetById(id int64) (*model.User, error) {
+	return s.userRepository.GetById(id)
+}

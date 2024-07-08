@@ -20,4 +20,5 @@ type User interface {
 	Delete(id int64) error
 	Update(id int64, user *model.User) error
 	Get(pagination *model.Pagination, filter *model.User) ([]model.User, error)
+	GetById(id int64) (*model.User, error)
 }
