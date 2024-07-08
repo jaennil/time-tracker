@@ -3,7 +3,6 @@ package service
 import (
 	"github.com/jaennil/time-tracker/internal/model"
 	"github.com/jaennil/time-tracker/internal/repository"
-	"github.com/jaennil/time-tracker/internal/repository/postgres"
 	"strings"
 )
 
@@ -18,9 +17,6 @@ func NewUserService(repository repository.User, userApi *UserAPI) *UserService {
 
 func (s *UserService) Create(passport string) (*model.User, error) {
 	seriesAndNumber := strings.Split(passport, " ")
-	if len(seriesAndNumber) != 2 {
-		return nil, postgres.InvalidPassportFormat
-	}
 
 	series := seriesAndNumber[0]
 	number := seriesAndNumber[1]
@@ -28,6 +24,7 @@ func (s *UserService) Create(passport string) (*model.User, error) {
 	if err != nil {
 		return nil, err
 	}
+	// TODO: maybe validate user api response values
 
 	user.PassportNumber = number
 	user.PassportSeries = series

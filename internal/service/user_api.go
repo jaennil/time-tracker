@@ -37,7 +37,7 @@ func (a *UserAPI) UserInfo(passportSerie string, passportNumber string) (*model.
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		return nil, errors.New("bad request")
+		return nil, errors.New("internal user api error")
 	}
 
 	user := new(model.User)

@@ -2,6 +2,8 @@ package http
 
 import (
 	"errors"
+	"github.com/go-playground/validator/v10"
+
 	"github.com/jaennil/time-tracker/internal/repository/postgres"
 	"go.uber.org/zap"
 	"net/http"
@@ -12,12 +14,13 @@ import (
 )
 
 type userRoutes struct {
-	service service.User
-	logger  logger.Loggable
+	service  service.User
+	logger   logger.Loggable
+	validate *validator.Validate
 }
 
-func NewUserRoutes(handler *gin.RouterGroup, userService service.User, log logger.Loggable) {
-	routes := &userRoutes{userService, log}
+func NewUserRoutes(handler *gin.RouterGroup, userService service.User, log logger.Loggable, validate *validator.Validate) {
+	routes := &userRoutes{userService, log, validate}
 
 	user := handler.Group("/user")
 	{
@@ -28,24 +31,24 @@ func NewUserRoutes(handler *gin.RouterGroup, userService service.User, log logge
 
 func (r *userRoutes) create(c *gin.Context) {
 	r.logger.Debug("hit endpoint", zap.String("url", c.FullPath()), zap.String("method", c.Request.Method))
-	var input struct {
-		Passport string `json:"passportNumber"`
-	}
 
+	var input struct {
+		Passport string `json:"passportNumber" binding:"required"`
+	}
 	if err := c.ShouldBindJSON(&input); err != nil {
-		errorResponse(c, http.StatusBadRequest, "must provide passport number")
+		errorResponse(c, http.StatusBadRequest, "invalid passport data")
+		return
+	}
+	err := r.validate.Var(input.Passport, "passport")
+	if err != nil {
+		errorResponse(c, http.StatusBadRequest, "invalid passport format")
 		return
 	}
 
 	user, err := r.service.Create(input.Passport)
 	if err != nil {
-		switch {
-		case errors.Is(err, postgres.InvalidPassportFormat):
-			errorResponse(c, http.StatusBadRequest, err.Error())
-		default:
-			r.logger.Error("failed to create user", err)
-			errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
-		}
+		r.logger.Error("failed to create user", err)
+		errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
 		return
 	}
 
@@ -54,16 +57,23 @@ func (r *userRoutes) create(c *gin.Context) {
 
 func (r *userRoutes) delete(c *gin.Context) {
 	r.logger.Debug("hit endpoint", zap.String("url", c.FullPath()), zap.String("method", c.Request.Method))
+
 	id, err := readIDParam(c)
 	if err != nil {
 		errorResponse(c, http.StatusBadRequest, "invalid id")
 		return
 	}
+	err = r.validate.Var(id, "gt=0")
+	if err != nil {
+		errorResponse(c, http.StatusBadRequest, "invalid id")
+		return
+	}
+
 	err = r.service.Delete(id)
 	if err != nil {
 		switch {
 		case errors.Is(err, postgres.RecordNotFound):
-			errorResponse(c, http.StatusBadRequest, "user not founded")
+			errorResponse(c, http.StatusBadRequest, "user not found")
 		default:
 			r.logger.Error("failed to delete user", err)
 			errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())

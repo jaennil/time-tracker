@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/jaennil/time-tracker/pkg/validator"
 	"go.uber.org/zap"
 	"os"
 	"os/signal"
@@ -69,7 +70,11 @@ func Run(config *config.Config) {
 	repositories := repository.NewRepository(db)
 	services := service.New(repositories, userApi)
 	handler := gin.New()
-	http.NewRouter(handler, services, log)
+	validate, err := validator.NewValidator()
+	if err != nil {
+		log.Fatal("failed to initialize validator", err)
+	}
+	http.NewRouter(handler, services, log, validate)
 	httpServer := httpserver.New(handler, httpserver.Port(config.Port))
 
 	quit := make(chan os.Signal, 1)
