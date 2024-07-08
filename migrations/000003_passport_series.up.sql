@@ -1,0 +1,1 @@
+ALTER TABLE users RENAME COLUMN passport_serie TO passport_series;

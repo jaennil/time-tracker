@@ -24,7 +24,7 @@ func NewUserRoutes(handler *gin.RouterGroup, userService service.User, log logge
 
 func (r *userRoutes) create(c *gin.Context) {
 	var input struct {
-		passportNumber string
+		Passport string `json:"passportNumber"`
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -32,7 +32,11 @@ func (r *userRoutes) create(c *gin.Context) {
 		return
 	}
 
-	r.service.Create(input.passportNumber)
+	user, err := r.service.Create(input.Passport)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+		return
+	}
 
-	c.String(http.StatusOK, "/user create")
+	c.JSON(http.StatusCreated, user)
 }

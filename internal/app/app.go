@@ -2,6 +2,8 @@ package app
 
 import (
 	"context"
+	"errors"
+	"go.uber.org/zap"
 	"os"
 	"os/signal"
 	"syscall"
@@ -17,69 +19,76 @@ import (
 	"github.com/jaennil/time-tracker/pkg/database/postgres"
 	"github.com/jaennil/time-tracker/pkg/httpserver"
 	"github.com/jaennil/time-tracker/pkg/logger"
-	"go.uber.org/zap"
 )
 
 func Run(config *config.Config) {
 	log := logger.NewZapLogger()
 	log.Info("initialized logger")
-	log.Debug("", zap.Any("config", config))
-	zapLogger, ok := log.(*logger.ZapLogger)
-	if ok {
-		defer zapLogger.Sync()
+	log.Debug("global app config: ", zap.Any("config", config))
+
+	if zapLogger, ok := log.(*logger.ZapLogger); ok {
+		defer func() {
+			err := zapLogger.Sync()
+			if err != nil {
+				log.Error("failed to sync zap logger", err)
+			}
+		}()
 	}
 
+	log.Info("connecting to database")
 	db, err := postgres.NewPostgres(config.PG_DSN)
 	if err != nil {
-		log.Fatal("faled to connect to database: ", err)
+		log.Fatal("failed to connect to database: ", err)
 	}
 	defer func() {
+		log.Info("closing database connection")
 		err := db.Close(context.Background())
 		if err != nil {
-			log.Fatal("faled to close database connection: ", err)
+			log.Fatal("failed to close database connection: ", err)
 		}
+		log.Info("database connection closed")
 	}()
 	log.Info("connected to database")
 
+	log.Info("creating migration instance")
 	m, err := migrate.New(
 		"file://migrations",
 		// TODO: replace database config with fields instead of DSN and
 		// build dsn from config here
 		"pgx://jaennil:naen@localhost:5432/time_tracker?sslmode=disable",
 	)
-	// TODO: logs
 	if err != nil {
-		log.Fatal("err", err)
+		log.Fatal("failed to create Migrate instance", err)
 	}
-	err = m.Up()
-	// TODO: logs
-	if err != nil && err != migrate.ErrNoChange {
-		log.Fatal("up err", err)
-	}
-	// TODO: logs
-	log.Info("mig suc")
 
+	log.Info("starting migrations")
+	err = m.Up()
+	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		log.Fatal("failed to migrate database", err)
+	}
+	log.Info("successfully migrated database")
+
+	userApi := service.NewUserAPI(config)
 	handler := gin.New()
-	repository := repository.NewRepository(db)
-	service := service.New(repository)
-	http.NewRouter(handler, service, log)
+	repositories := repository.NewRepository(db)
+	services := service.New(repositories, userApi)
+	http.NewRouter(handler, services, log)
 	httpServer := httpserver.New(handler, httpserver.Port(config.Port))
 
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
 	select {
-	case s := <-interrupt:
-		log.Info("app - Run - signal: " + s.String())
+	case s := <-quit:
+		log.Info("got signal" + s.String())
 	case err = <-httpServer.Notify():
-		log.Error("app - Run - httpServer.Notify: ", err)
+		log.Error("got server error", err)
 	}
-
-	log.Info("Shutdown server")
+	log.Info("shutting down server")
 
 	err = httpServer.Shutdown()
 	if err != nil {
-		log.Error("app - Run - httpServer.Shutdown: ", err)
+		log.Error("failed to shutdown server", err)
 	}
 
 }
