@@ -29,19 +29,19 @@ func (a *UserAPI) UserInfo(passportSerie string, passportNumber string) (*model.
 	query.Set("passportNumber", passportNumber)
 	apiURL.RawQuery = query.Encode()
 
-	responce, err := http.Get(apiURL.String())
+	response, err := http.Get(apiURL.String())
 	if err != nil {
 		return nil, err
 	}
 	// TODO: handle close error
-	defer responce.Body.Close()
+	defer response.Body.Close()
 
-	if responce.StatusCode != http.StatusOK {
+	if response.StatusCode != http.StatusOK {
 		return nil, errors.New("bad request")
 	}
 
 	user := new(model.User)
-	if err := json.NewDecoder(responce.Body).Decode(user); err != nil {
+	if err := json.NewDecoder(response.Body).Decode(user); err != nil {
 		return nil, err
 	}
 

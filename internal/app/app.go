@@ -23,7 +23,6 @@ import (
 )
 
 func Run(config *config.Config) {
-	//TODO: wrap server errors
 	log := logger.NewZapLogger()
 	log.Info("initialized logger")
 	log.Debug("global app config: ", zap.Any("config", config))

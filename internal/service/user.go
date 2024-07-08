@@ -1,9 +1,9 @@
 package service
 
 import (
-	"errors"
 	"github.com/jaennil/time-tracker/internal/model"
 	"github.com/jaennil/time-tracker/internal/repository"
+	"github.com/jaennil/time-tracker/internal/repository/postgres"
 	"strings"
 )
 
@@ -19,7 +19,7 @@ func NewUserService(repository repository.User, userApi *UserAPI) *UserService {
 func (s *UserService) Create(passport string) (*model.User, error) {
 	seriesAndNumber := strings.Split(passport, " ")
 	if len(seriesAndNumber) != 2 {
-		return nil, errors.New("invalid passport format")
+		return nil, postgres.InvalidPassportFormat
 	}
 
 	series := seriesAndNumber[0]

@@ -3,6 +3,7 @@ package http
 import (
 	"errors"
 	"github.com/jaennil/time-tracker/internal/repository/postgres"
+	"go.uber.org/zap"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -37,7 +38,13 @@ func (r *userRoutes) create(c *gin.Context) {
 
 	user, err := r.service.Create(input.Passport)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+		switch {
+		case errors.Is(err, postgres.InvalidPassportFormat):
+			c.AbortWithStatusJSON(http.StatusBadRequest, err)
+		default:
+			r.logger.Error("failed to create user", zap.Error(err))
+			c.AbortWithStatusJSON(http.StatusInternalServerError, postgres.InternalServerError)
+		}
 		return
 	}
 
@@ -54,9 +61,10 @@ func (r *userRoutes) delete(c *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, postgres.RecordNotFound):
-			c.AbortWithStatusJSON(http.StatusNotFound, "user not found")
+			c.AbortWithStatusJSON(http.StatusNotFound, "user not founded")
 		default:
-			c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+			r.logger.Error("failed to delete user", zap.Error(err))
+			c.AbortWithStatusJSON(http.StatusInternalServerError, postgres.InternalServerError)
 		}
 		return
 	}
