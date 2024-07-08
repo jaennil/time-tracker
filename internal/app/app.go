@@ -69,7 +69,7 @@ func Run(config *config.Config) {
 	userApi := service.NewUserAPI(config)
 	repositories := repository.NewRepository(db)
 	services := service.New(repositories, userApi)
-	handler := gin.New()
+	handler := gin.Default()
 	validate, err := validator.NewValidator()
 	if err != nil {
 		log.Fatal("failed to initialize validator", err)
