@@ -15,6 +15,7 @@ func NewZapLogger() Loggable {
 	config := zap.NewDevelopmentConfig()
 
 	config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+	config.DisableCaller = true
 
 	logger, err := config.Build()
 	if err != nil {
