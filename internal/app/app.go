@@ -28,11 +28,9 @@ func Run(config *config.Config) {
 	log.Debug("global app config: ", zap.Any("config", config))
 
 	if zapLogger, ok := log.(*logger.ZapLogger); ok {
+		// no need to handle Sync error https://github.com/uber-go/zap/issues/328
 		defer func() {
-			err := zapLogger.Sync()
-			if err != nil {
-				log.Error("failed to sync zap logger", err)
-			}
+			_ = zapLogger.Sync()
 		}()
 	}
 
@@ -44,10 +42,11 @@ func Run(config *config.Config) {
 	defer func() {
 		log.Info("closing database connection")
 		err := db.Close(context.Background())
-		if err != nil {
-			log.Fatal("failed to close database connection: ", err)
+		if err == nil {
+			log.Info("database connection closed")
+		} else {
+			log.Error("failed to close database connection: ", err)
 		}
-		log.Info("database connection closed")
 	}()
 	log.Info("connected to database")
 
@@ -59,7 +58,6 @@ func Run(config *config.Config) {
 	if err != nil {
 		log.Fatal("failed to create Migrate instance", err)
 	}
-
 	log.Info("starting migrations")
 	err = m.Up()
 	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
@@ -68,9 +66,9 @@ func Run(config *config.Config) {
 	log.Info("successfully migrated database")
 
 	userApi := service.NewUserAPI(config)
-	handler := gin.New()
 	repositories := repository.NewRepository(db)
 	services := service.New(repositories, userApi)
+	handler := gin.New()
 	http.NewRouter(handler, services, log)
 	httpServer := httpserver.New(handler, httpserver.Port(config.Port))
 
@@ -79,7 +77,7 @@ func Run(config *config.Config) {
 
 	select {
 	case s := <-quit:
-		log.Info("got signal" + s.String())
+		log.Info("got signal", zap.String("signal", s.String()))
 	case err = <-httpServer.Notify():
 		log.Error("got server error", err)
 	}
@@ -89,5 +87,5 @@ func Run(config *config.Config) {
 	if err != nil {
 		log.Error("failed to shutdown server", err)
 	}
-
+	log.Info("server shutdown success")
 }

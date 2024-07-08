@@ -27,12 +27,13 @@ func NewUserRoutes(handler *gin.RouterGroup, userService service.User, log logge
 }
 
 func (r *userRoutes) create(c *gin.Context) {
+	r.logger.Debug("hit endpoint", zap.String("url", c.FullPath()), zap.String("method", c.Request.Method))
 	var input struct {
 		Passport string `json:"passportNumber"`
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, "must provide passport number")
+		errorResponse(c, http.StatusBadRequest, "must provide passport number")
 		return
 	}
 
@@ -40,10 +41,10 @@ func (r *userRoutes) create(c *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, postgres.InvalidPassportFormat):
-			c.AbortWithStatusJSON(http.StatusBadRequest, err)
+			errorResponse(c, http.StatusBadRequest, err.Error())
 		default:
-			r.logger.Error("failed to create user", zap.Error(err))
-			c.AbortWithStatusJSON(http.StatusInternalServerError, postgres.InternalServerError)
+			r.logger.Error("failed to create user", err)
+			errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
 		}
 		return
 	}
@@ -52,19 +53,20 @@ func (r *userRoutes) create(c *gin.Context) {
 }
 
 func (r *userRoutes) delete(c *gin.Context) {
+	r.logger.Debug("hit endpoint", zap.String("url", c.FullPath()), zap.String("method", c.Request.Method))
 	id, err := readIDParam(c)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, "invalid id")
+		errorResponse(c, http.StatusBadRequest, "invalid id")
 		return
 	}
 	err = r.service.Delete(id)
 	if err != nil {
 		switch {
 		case errors.Is(err, postgres.RecordNotFound):
-			c.AbortWithStatusJSON(http.StatusNotFound, "user not founded")
+			errorResponse(c, http.StatusBadRequest, "user not founded")
 		default:
-			r.logger.Error("failed to delete user", zap.Error(err))
-			c.AbortWithStatusJSON(http.StatusInternalServerError, postgres.InternalServerError)
+			r.logger.Error("failed to delete user", err)
+			errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
 		}
 		return
 	}
