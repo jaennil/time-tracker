@@ -20,4 +20,5 @@ type User interface {
 	Store(*model.User) error
 	Delete(id int64) error
 	Update(id int64, user *model.User) error
+	Get() ([]model.User, error)
 }

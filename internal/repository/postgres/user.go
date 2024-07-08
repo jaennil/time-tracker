@@ -65,3 +65,22 @@ func (r *UserRepository) Update(id int64, user *model.User) error {
 
 	return nil
 }
+
+func (r *UserRepository) Get() ([]model.User, error) {
+	query := `SELECT user_id, name, surname, patronymic, address, passport_series, passport_number FROM users`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	users, err := pgx.CollectRows(rows, pgx.RowToStructByName[model.User])
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}

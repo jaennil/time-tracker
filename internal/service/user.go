@@ -44,3 +44,7 @@ func (s *UserService) Delete(id int64) error {
 func (s *UserService) Update(id int64, user *model.User) error {
 	return s.userRepository.Update(id, user)
 }
+
+func (s *UserService) Get() ([]model.User, error) {
+	return s.userRepository.Get()
+}

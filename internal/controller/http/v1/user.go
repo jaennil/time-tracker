@@ -23,11 +23,12 @@ type userRoutes struct {
 func NewUserRoutes(handler *gin.RouterGroup, userService service.User, log logger.Loggable, validate *validator.Validate) {
 	routes := &userRoutes{userService, log, validate}
 
-	user := handler.Group("/user")
+	users := handler.Group("/users")
 	{
-		user.POST("", routes.create)
-		user.DELETE(":id", routes.delete)
-		user.PATCH(":id", routes.update)
+		users.POST("", routes.create)
+		users.DELETE(":id", routes.delete)
+		users.PATCH(":id", routes.update)
+		users.GET("", routes.get)
 	}
 }
 
@@ -125,4 +126,17 @@ func (r *userRoutes) update(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "user updated successfully"})
+}
+
+func (r *userRoutes) get(c *gin.Context) {
+	r.logger.Debug("hit endpoint", zap.String("url", c.FullPath()), zap.String("method", c.Request.Method))
+
+	users, err := r.service.Get()
+	if err != nil {
+		// ?
+		errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, users)
 }
