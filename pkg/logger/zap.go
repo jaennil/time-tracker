@@ -48,6 +48,6 @@ func (l *ZapLogger) Fatal(msg string, keysAndValues ...interface{}) {
 	l.logger.Fatalw(msg, keysAndValues...)
 }
 
-func (l *ZapLogger) Sync() {
-	l.logger.Sync()
+func (l *ZapLogger) Sync() error {
+	return l.logger.Sync()
 }
