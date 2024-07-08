@@ -112,7 +112,7 @@ func (r *userRoutes) update(c *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, postgres.RecordNotFound):
-			errorResponse(c, http.StatusBadRequest, "user not found")
+			errorResponse(c, http.StatusNoContent, "user not found")
 		default:
 			r.logger.Error("failed to update user", err)
 			errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
@@ -192,8 +192,13 @@ func (r *userRoutes) getById(c *gin.Context) {
 
 	user, err := r.service.GetById(id)
 	if err != nil {
-		r.logger.Error("failed to get users", err)
-		errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
+		switch {
+		case errors.Is(err, postgres.RecordNotFound):
+			errorResponse(c, http.StatusNoContent, "user not found")
+		default:
+			r.logger.Error("failed to get user", err)
+			errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
+		}
 		return
 	}
 

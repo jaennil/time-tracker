@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"github.com/jackc/pgx/v5"
 	"github.com/jaennil/time-tracker/internal/model"
 	"time"
@@ -123,7 +124,12 @@ func (r *UserRepository) GetById(id int64) (*model.User, error) {
 
 	user, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[model.User])
 	if err != nil {
-		return nil, err
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return nil, RecordNotFound
+		default:
+			return nil, err
+		}
 	}
 
 	return &user, nil
