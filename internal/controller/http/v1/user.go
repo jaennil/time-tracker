@@ -131,7 +131,7 @@ func (r *userRoutes) update(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "user updated successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "user updated successfully", "user": user})
 }
 
 func (r *userRoutes) get(c *gin.Context) {
