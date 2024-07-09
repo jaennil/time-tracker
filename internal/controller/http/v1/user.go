@@ -38,7 +38,7 @@ func (r *userRoutes) create(c *gin.Context) {
 		Passport string `json:"passportNumber" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
-		errorResponse(c, http.StatusBadRequest, "invalid passport data")
+		errorResponse(c, http.StatusBadRequest, "invalid or no passport data")
 		return
 	}
 	err := r.validate.Var(input.Passport, "passport")
