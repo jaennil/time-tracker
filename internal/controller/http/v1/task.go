@@ -52,7 +52,7 @@ func (r *taskRoutes) start(c *gin.Context) {
 			errorResponse(c, http.StatusBadRequest, "specified user not found")
 		default:
 			r.logger.Error("failed to start task", zap.Error(err))
-			errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
+			internalServerErrorResponse(c)
 		}
 		return
 	}
@@ -83,7 +83,7 @@ func (r *taskRoutes) end(c *gin.Context) {
 			errorResponse(c, http.StatusBadRequest, "task associated with provided user not found")
 		default:
 			r.logger.Error("failed to stop task", zap.Error(err))
-			errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
+			internalServerErrorResponse(c)
 		}
 		return
 	}
@@ -120,7 +120,7 @@ func (r *taskRoutes) activity(c *gin.Context) {
 			errorResponse(c, http.StatusBadRequest, "activities not found")
 		default:
 			r.logger.Error("failed to get activities", zap.Error(err))
-			errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
+			internalServerErrorResponse(c)
 		}
 		return
 	}

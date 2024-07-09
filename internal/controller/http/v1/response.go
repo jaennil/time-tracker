@@ -20,3 +20,7 @@ func NotFoundResponse(c *gin.Context) {
 func noContentResponse(c *gin.Context) {
 	c.AbortWithStatus(http.StatusNoContent)
 }
+
+func internalServerErrorResponse(c *gin.Context) {
+	errorResponse(c, http.StatusInternalServerError, "the server encountered a problem and could not process your request")
+}

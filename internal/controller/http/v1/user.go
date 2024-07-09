@@ -51,7 +51,7 @@ func (r *userRoutes) create(c *gin.Context) {
 	user, err := r.service.Create(input.Passport)
 	if err != nil {
 		r.logger.Error("failed to create user", err)
-		errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
+		internalServerErrorResponse(c)
 		return
 	}
 
@@ -77,7 +77,7 @@ func (r *userRoutes) delete(c *gin.Context) {
 			errorResponse(c, http.StatusBadRequest, "user not found")
 		default:
 			r.logger.Error("failed to delete user", err)
-			errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
+			internalServerErrorResponse(c)
 		}
 		return
 	}
@@ -104,7 +104,7 @@ func (r *userRoutes) update(c *gin.Context) {
 			errorResponse(c, http.StatusBadRequest, "user not found")
 		default:
 			r.logger.Error("failed to update user", err)
-			errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
+			internalServerErrorResponse(c)
 		}
 		return
 	}
@@ -127,7 +127,7 @@ func (r *userRoutes) update(c *gin.Context) {
 			errorResponse(c, http.StatusBadRequest, "user not found")
 		default:
 			r.logger.Error("failed to update user", err)
-			errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
+			internalServerErrorResponse(c)
 		}
 		return
 	}
@@ -183,7 +183,7 @@ func (r *userRoutes) get(c *gin.Context) {
 	users, err := r.service.Get(&pagination, &filter)
 	if err != nil {
 		r.logger.Error("failed to get users", err)
-		errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
+		internalServerErrorResponse(c)
 		return
 	}
 
@@ -209,7 +209,7 @@ func (r *userRoutes) getById(c *gin.Context) {
 			noContentResponse(c)
 		default:
 			r.logger.Error("failed to get user", err)
-			errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
+			internalServerErrorResponse(c)
 		}
 		return
 	}
