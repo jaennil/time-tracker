@@ -4,6 +4,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jaennil/time-tracker/internal/model"
 	"github.com/jaennil/time-tracker/internal/repository"
+	"math"
 	"time"
 )
 
@@ -52,4 +53,29 @@ func (s *TaskService) End(taskId, userId int64) (*model.Task, error) {
 	}
 
 	return task, nil
+}
+
+func (s *TaskService) Activity(userId int64, startTime, endTime time.Time) ([]model.PrettyActivity, error) {
+	// verify that provided user exists by userId
+	_, err := s.userRepository.GetById(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	activities, err := s.taskRepository.Activity(userId, startTime, endTime)
+	if err != nil {
+		return nil, err
+	}
+
+	prettyActivities := make([]model.PrettyActivity, len(activities))
+	for i, activity := range activities {
+		prettyActivities[i] = model.PrettyActivity{
+			Name:    activity.Name,
+			Hours:   int(activity.Duration.Hours()),
+			Minutes: math.Mod(activity.Duration.Minutes(), 60),
+		}
+	}
+
+	return prettyActivities, nil
+
 }

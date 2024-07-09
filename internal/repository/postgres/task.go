@@ -65,3 +65,25 @@ func (r *TaskRepository) GetById(id int64) (*model.Task, error) {
 
 	return &task, nil
 }
+
+func (r *TaskRepository) Activity(userId int64, startTime, endTime time.Time) ([]model.Activity, error) {
+	query := `SELECT name, end_time - start_time AS duration
+				FROM tasks
+				WHERE user_id = $1 AND end_time IS NOT NULL AND start_time >= $2 AND end_time <= $3
+				ORDER BY duration;`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := r.db.Query(ctx, query, userId, startTime, endTime)
+	if err != nil {
+		return nil, err
+	}
+
+	activities, err := pgx.CollectRows(rows, pgx.RowToStructByName[model.Activity])
+	if err != nil {
+		return nil, err
+	}
+
+	return activities, nil
+}

@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/jaennil/time-tracker/internal/model"
 	"github.com/jaennil/time-tracker/internal/repository"
+	"time"
 )
 
 type Service struct {
@@ -28,4 +29,5 @@ type User interface {
 type Task interface {
 	Start(userId int64, name string) (*model.Task, error)
 	End(taskId int64, userId int64) (*model.Task, error)
+	Activity(userId int64, startTime, endTime time.Time) ([]model.PrettyActivity, error)
 }

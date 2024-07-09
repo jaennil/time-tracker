@@ -10,6 +10,8 @@ import (
 	"github.com/jaennil/time-tracker/pkg/logger"
 	"go.uber.org/zap"
 	"net/http"
+	"strconv"
+	"time"
 )
 
 type taskRoutes struct {
@@ -25,6 +27,7 @@ func NewTaskRoutes(handler *gin.RouterGroup, taskService service.Task, log logge
 	{
 		tasks.POST("/start", r.start)
 		tasks.POST("/end", r.end)
+		tasks.GET("/activity/:user_id", r.activity)
 	}
 }
 
@@ -86,4 +89,41 @@ func (r *taskRoutes) end(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{"message": "task ended", "task": task})
+}
+
+func (r *taskRoutes) activity(c *gin.Context) {
+	userIdStr := c.Param("user_id")
+	userId, err := strconv.ParseInt(userIdStr, 10, 64)
+	if err != nil {
+		errorResponse(c, http.StatusBadRequest, "invalid user id")
+		return
+	}
+	err = r.validate.Var(userId, "gt=0")
+	if err != nil {
+		errorResponse(c, http.StatusBadRequest, "invalid user id")
+		return
+	}
+
+	var input struct {
+		StartTime time.Time `form:"start_time" binding:"required" time_format:"2006-01-02T15:04:05Z"`
+		EndTime   time.Time `form:"end_time" binding:"required" time_format:"2006-01-02T15:04:05Z"`
+	}
+	if err := c.ShouldBindQuery(&input); err != nil {
+		errorResponse(c, http.StatusBadRequest, "start or end time not provided or have invalid format(2006-01-02T15:04:05Z)")
+		return
+	}
+
+	activities, err := r.service.Activity(userId, input.StartTime, input.EndTime)
+	if err != nil {
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			errorResponse(c, http.StatusBadRequest, "activities not found")
+		default:
+			r.logger.Error("failed to get activities", zap.Error(err))
+			errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, activities)
 }

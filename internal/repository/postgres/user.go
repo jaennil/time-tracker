@@ -79,11 +79,10 @@ func (r *UserRepository) Get(pagination *model.Pagination, filter *model.User) (
 				ORDER BY user_id
 				LIMIT $8 OFFSET $9`
 
-	offset := (pagination.Page - 1) * pagination.PageSize
-
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
+	offset := (pagination.Page - 1) * pagination.PageSize
 	rows, err := r.db.Query(ctx,
 		query,
 		filter.Id,

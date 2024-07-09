@@ -4,6 +4,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jaennil/time-tracker/internal/model"
 	"github.com/jaennil/time-tracker/internal/repository/postgres"
+	"time"
 )
 
 type Repository struct {
@@ -30,4 +31,5 @@ type Task interface {
 	Store(task *model.Task) error
 	End(task *model.Task) error
 	GetById(id int64) (*model.Task, error)
+	Activity(userId int64, startTime, endTime time.Time) ([]model.Activity, error)
 }
