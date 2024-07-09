@@ -75,6 +75,7 @@ func Run(config *config.Config) {
 	repositories := repository.NewRepository(db)
 	services := service.New(repositories, userApi)
 	handler := gin.Default()
+	handler.NoRoute(http.NotFoundResponse)
 	http.NewRouter(handler, services, log, validate)
 	httpServer := httpserver.New(handler, httpserver.Port(config.Port))
 

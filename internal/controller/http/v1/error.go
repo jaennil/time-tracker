@@ -1,6 +1,9 @@
 package http
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"net/http"
+)
 
 type response struct {
 	Error string `json:"error" example:"message"`
@@ -8,4 +11,8 @@ type response struct {
 
 func errorResponse(c *gin.Context, code int, msg string) {
 	c.AbortWithStatusJSON(code, response{msg})
+}
+
+func NotFoundResponse(c *gin.Context) {
+	errorResponse(c, http.StatusNotFound, "route not found")
 }
