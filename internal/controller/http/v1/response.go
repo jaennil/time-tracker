@@ -16,3 +16,7 @@ func errorResponse(c *gin.Context, code int, msg string) {
 func NotFoundResponse(c *gin.Context) {
 	errorResponse(c, http.StatusNotFound, "route not found")
 }
+
+func noContentResponse(c *gin.Context) {
+	c.AbortWithStatus(http.StatusNoContent)
+}
