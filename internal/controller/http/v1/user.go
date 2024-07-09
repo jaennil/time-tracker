@@ -54,7 +54,7 @@ func (r *userRoutes) create(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "user created", "id": user.Id})
+	c.JSON(http.StatusCreated, gin.H{"message": "user created", "user": user})
 }
 
 func (r *userRoutes) delete(c *gin.Context) {
@@ -168,13 +168,14 @@ func (r *userRoutes) get(c *gin.Context) {
 			return
 		}
 	}
+	patronymic := c.Query("patronymic")
 	filter := &model.User{
 		Id:             int64(userId),
 		PassportSeries: c.Query("passport_series"),
 		PassportNumber: c.Query("passport_number"),
 		Name:           c.Query("name"),
 		Surname:        c.Query("surname"),
-		Patronymic:     c.Query("patronymic"),
+		Patronymic:     &patronymic,
 		Address:        c.Query("address"),
 	}
 

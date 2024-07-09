@@ -19,7 +19,7 @@ func NewZapLogger() Loggable {
 
 	logger, err := config.Build()
 	if err != nil {
-		log.Fatal("error occured while building zap logger: ", err)
+		log.Fatal("error occurred while building zap logger: ", err)
 	}
 
 	sugared := logger.Sugar()
