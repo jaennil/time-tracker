@@ -18,7 +18,7 @@ func NewTaskService(taskRepository repository.Task, userRepository repository.Us
 }
 
 func (s *TaskService) Start(userId int64, name string) (*model.Task, error) {
-	// verify that provided user exists by userId
+	// verifies that provided by userId user exists
 	_, err := s.userRepository.GetById(userId)
 	if err != nil {
 		return nil, err
@@ -56,7 +56,7 @@ func (s *TaskService) End(taskId, userId int64) (*model.Task, error) {
 }
 
 func (s *TaskService) Activity(userId int64, startTime, endTime time.Time) ([]model.PrettyActivity, error) {
-	// verify that provided user exists by userId
+	// verifies that provided by userId user exists
 	_, err := s.userRepository.GetById(userId)
 	if err != nil {
 		return nil, err

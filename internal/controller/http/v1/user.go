@@ -36,13 +36,13 @@ func NewUserRoutes(handler *gin.RouterGroup, userService service.User, log logge
 
 func (r *userRoutes) create(c *gin.Context) {
 	var input struct {
-		Passport string `json:"passportNumber" binding:"required"`
+		Passport string `json:"passportNumber" binding:"required" validate:"passport"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		errorResponse(c, http.StatusBadRequest, "invalid or no passport data")
 		return
 	}
-	err := r.validate.Var(input.Passport, "passport")
+	err := r.validate.Struct(input)
 	if err != nil {
 		errorResponse(c, http.StatusBadRequest, "invalid passport format")
 		return
@@ -101,7 +101,7 @@ func (r *userRoutes) update(c *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, pgx.ErrNoRows):
-			errorResponse(c, http.StatusNoContent, "user not found")
+			errorResponse(c, http.StatusBadRequest, "user not found")
 		default:
 			r.logger.Error("failed to update user", err)
 			errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
@@ -124,7 +124,7 @@ func (r *userRoutes) update(c *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, postgres.RecordNotFound):
-			errorResponse(c, http.StatusNoContent, "user not found")
+			errorResponse(c, http.StatusBadRequest, "user not found")
 		default:
 			r.logger.Error("failed to update user", err)
 			errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
@@ -147,6 +147,7 @@ func (r *userRoutes) get(c *gin.Context) {
 		errorResponse(c, http.StatusBadRequest, "page must be positive number")
 		return
 	}
+
 	pageSizeStr := c.DefaultQuery("page_size", "100")
 	pageSize, err := strconv.Atoi(pageSizeStr)
 	if err != nil {
@@ -158,20 +159,18 @@ func (r *userRoutes) get(c *gin.Context) {
 		errorResponse(c, http.StatusBadRequest, "page size must be positive number")
 		return
 	}
-	userIdStr := c.Query("user_id")
-	var userId int
-	if userIdStr == "" {
-		userId = 0
-	} else {
-		userId, err = strconv.Atoi(userIdStr)
-		if err != nil {
-			errorResponse(c, http.StatusBadRequest, "invalid user id")
-			return
-		}
+
+	userIdStr := c.DefaultQuery("user_id", "0")
+	userId, err := strconv.ParseInt(userIdStr, 10, 64)
+	if err != nil {
+		errorResponse(c, http.StatusBadRequest, "invalid user id")
+		return
 	}
+
+	// TODO: validate filters
 	patronymic := c.Query("patronymic")
-	filter := &model.User{
-		Id:             int64(userId),
+	filter := model.User{
+		Id:             userId,
 		PassportSeries: c.Query("passport_series"),
 		PassportNumber: c.Query("passport_number"),
 		Name:           c.Query("name"),
@@ -180,8 +179,8 @@ func (r *userRoutes) get(c *gin.Context) {
 		Address:        c.Query("address"),
 	}
 
-	pagination := &model.Pagination{Page: page, PageSize: pageSize}
-	users, err := r.service.Get(pagination, filter)
+	pagination := model.Pagination{Page: page, PageSize: pageSize}
+	users, err := r.service.Get(&pagination, &filter)
 	if err != nil {
 		r.logger.Error("failed to get users", err)
 		errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
@@ -207,7 +206,7 @@ func (r *userRoutes) getById(c *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, pgx.ErrNoRows):
-			errorResponse(c, http.StatusNoContent, "user not found")
+			noContentResponse(c)
 		default:
 			r.logger.Error("failed to get user", err)
 			errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
