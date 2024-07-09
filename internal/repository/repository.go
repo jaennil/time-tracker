@@ -28,6 +28,6 @@ type User interface {
 
 type Task interface {
 	Store(task *model.Task) error
-	Update(task *model.Task) error
+	End(task *model.Task) error
 	GetById(id int64) (*model.Task, error)
 }

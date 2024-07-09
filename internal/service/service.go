@@ -13,7 +13,7 @@ type Service struct {
 func New(repositories *repository.Repository, userApi *UserAPI) *Service {
 	return &Service{
 		User: NewUserService(repositories.User, userApi),
-		Task: NewTaskService(repositories.Task),
+		Task: NewTaskService(repositories.Task, repositories.User),
 	}
 }
 
@@ -26,6 +26,6 @@ type User interface {
 }
 
 type Task interface {
-	Start(task *model.Task) error
-	End(id int64) (*model.Task, error)
+	Start(userId int64, name string) (*model.Task, error)
+	End(taskId int64, userId int64) (*model.Task, error)
 }

@@ -1,15 +1,15 @@
 package http
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/jaennil/time-tracker/internal/model"
+	"github.com/jackc/pgx/v5"
 	"github.com/jaennil/time-tracker/internal/repository/postgres"
 	"github.com/jaennil/time-tracker/internal/service"
 	"github.com/jaennil/time-tracker/pkg/logger"
 	"go.uber.org/zap"
 	"net/http"
-	"strconv"
 )
 
 type taskRoutes struct {
@@ -23,68 +23,67 @@ func NewTaskRoutes(handler *gin.RouterGroup, taskService service.Task, log logge
 
 	tasks := handler.Group("/tasks")
 	{
-		tasks.POST(":user_id/start", r.start)
+		tasks.POST("/start", r.start)
 		tasks.POST("/end", r.end)
 	}
 }
 
 func (r *taskRoutes) start(c *gin.Context) {
-	userIdStr := c.Param("user_id")
-	userId, err := strconv.ParseInt(userIdStr, 10, 64)
+	var input struct {
+		UserId int64  `json:"user_id" binding:"required" validate:"gt=0"`
+		Name   string `json:"name" binding:"required" validate:"min=1,max=255"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		errorResponse(c, http.StatusBadRequest, "invalid task data")
+		return
+	}
+	if err := r.validate.Struct(input); err != nil {
+		errorResponse(c, http.StatusBadRequest, "invalid task data")
+		return
+	}
+
+	task, err := r.service.Start(input.UserId, input.Name)
 	if err != nil {
-		errorResponse(c, http.StatusBadRequest, "invalid user_id")
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			errorResponse(c, http.StatusBadRequest, "specified user not found")
+		default:
+			r.logger.Error("failed to start task", zap.Error(err))
+			errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
+		}
 		return
 	}
 
-	task := model.Task{UserId: userId}
-	if err := c.ShouldBind(&task); err != nil {
-		errorResponse(c, http.StatusBadRequest, "invalid task name")
-		return
-	}
-
-	err = r.service.Start(&task)
-	if err != nil {
-		r.logger.Error("failed to start task", zap.Error(err))
-		errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
-		return
-	}
-
-	c.JSON(200, gin.H{"message": "task created", "task": task})
+	c.JSON(200, gin.H{"message": "task started", "task": task})
 }
 
 func (r *taskRoutes) end(c *gin.Context) {
-	//userIdStr := c.Param("user_id")
-	//userId, err := strconv.ParseInt(userIdStr, 10, 64)
-	//if err != nil {
-	//	errorResponse(c, http.StatusBadRequest, "invalid user_id")
-	//	return
-	//}
-	//r.logger.Debug("user_id", zap.Int64("user_id", userId))
-	//
-	//taskIdStr := c.Param("task_id")
-	//taskId, err := strconv.ParseInt(taskIdStr, 10, 64)
-	//if err != nil {
-	//	errorResponse(c, http.StatusBadRequest, "invalid user_id")
-	//	return
-	//}
-	//r.logger.Debug("task_id", zap.Int64("task_id", taskId))
-
 	var input struct {
-		TaskId int64 `json:"task_id"`
+		TaskId int64 `json:"task_id" binding:"required" validate:"gt=0"`
+		UserId int64 `json:"user_id" binding:"required" validate:"gt=0"`
 	}
-	err := c.ShouldBindJSON(&input)
-	if err != nil {
-		errorResponse(c, http.StatusBadRequest, "invalid task id")
+	if err := c.ShouldBindJSON(&input); err != nil {
+		errorResponse(c, http.StatusBadRequest, "invalid task data")
+		return
+	}
+	if err := r.validate.Struct(input); err != nil {
+		errorResponse(c, http.StatusBadRequest, "invalid task data")
 		return
 	}
 
-	task, err := r.service.End(input.TaskId)
+	task, err := r.service.End(input.TaskId, input.UserId)
 	if err != nil {
-		// TODO: handle err no record
-		r.logger.Error("failed to stop task", zap.Error(err))
-		errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			errorResponse(c, http.StatusBadRequest, "task not found")
+		case errors.Is(err, postgres.RecordNotFound):
+			errorResponse(c, http.StatusBadRequest, "task associated with provided user not found")
+		default:
+			r.logger.Error("failed to stop task", zap.Error(err))
+			errorResponse(c, http.StatusInternalServerError, postgres.InternalServerError.Error())
+		}
 		return
 	}
 
-	c.JSON(200, gin.H{"message": "task stopped", "task": task})
+	c.JSON(200, gin.H{"message": "task ended", "task": task})
 }

@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"errors"
 	"github.com/jackc/pgx/v5"
 	"github.com/jaennil/time-tracker/internal/model"
 	"time"
@@ -27,15 +26,15 @@ func (r *TaskRepository) Store(task *model.Task) error {
 		Scan(&task.TaskId)
 }
 
-func (r *TaskRepository) Update(task *model.Task) error {
+func (r *TaskRepository) End(task *model.Task) error {
 	query := `UPDATE tasks
 				SET end_time = $1
-				WHERE task_id = $2`
+				WHERE task_id = $2 AND user_id = $3`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	result, err := r.db.Exec(ctx, query, task.EndTime.Time, task.TaskId)
+	result, err := r.db.Exec(ctx, query, task.EndTime.Time, task.TaskId, task.UserId)
 	if err != nil {
 		return err
 	}
@@ -61,12 +60,7 @@ func (r *TaskRepository) GetById(id int64) (*model.Task, error) {
 
 	task, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[model.Task])
 	if err != nil {
-		switch {
-		case errors.Is(err, pgx.ErrNoRows):
-			return nil, RecordNotFound
-		default:
-			return nil, err
-		}
+		return nil, err
 	}
 
 	return &task, nil
