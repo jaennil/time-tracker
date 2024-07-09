@@ -8,11 +8,13 @@ import (
 
 type Repository struct {
 	User
+	Task
 }
 
 func NewRepository(db *pgx.Conn) *Repository {
 	return &Repository{
 		User: postgres.NewUserRepository(db),
+		Task: postgres.NewTaskRepository(db),
 	}
 }
 
@@ -22,4 +24,10 @@ type User interface {
 	Update(id int64, user *model.User) error
 	Get(pagination *model.Pagination, filter *model.User) ([]model.User, error)
 	GetById(id int64) (*model.User, error)
+}
+
+type Task interface {
+	Store(task *model.Task) error
+	Update(task *model.Task) error
+	GetById(id int64) (*model.Task, error)
 }

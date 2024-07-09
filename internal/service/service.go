@@ -7,11 +7,13 @@ import (
 
 type Service struct {
 	User
+	Task
 }
 
 func New(repositories *repository.Repository, userApi *UserAPI) *Service {
 	return &Service{
-		User: NewUserService(repositories, userApi),
+		User: NewUserService(repositories.User, userApi),
+		Task: NewTaskService(repositories.Task),
 	}
 }
 
@@ -21,4 +23,9 @@ type User interface {
 	Update(id int64, user *model.User) error
 	Get(pagination *model.Pagination, filter *model.User) ([]model.User, error)
 	GetById(id int64) (*model.User, error)
+}
+
+type Task interface {
+	Start(task *model.Task) error
+	End(id int64) (*model.Task, error)
 }
