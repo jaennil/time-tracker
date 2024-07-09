@@ -100,7 +100,7 @@ func (r *userRoutes) update(c *gin.Context) {
 	user, err := r.service.GetById(id)
 	if err != nil {
 		switch {
-		case errors.Is(err, postgres.RecordNotFound):
+		case errors.Is(err, pgx.ErrNoRows):
 			errorResponse(c, http.StatusNoContent, "user not found")
 		default:
 			r.logger.Error("failed to update user", err)
