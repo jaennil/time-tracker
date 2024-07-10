@@ -9,6 +9,8 @@ import (
 	"net/url"
 )
 
+var UserAPIBadRequest = errors.New("user api bad request")
+
 type UserAPI struct {
 	config *config.Config
 }
@@ -36,14 +38,17 @@ func (a *UserAPI) UserInfo(passportSerie string, passportNumber string) (*model.
 	// TODO: handle close error
 	defer response.Body.Close()
 
-	if response.StatusCode != http.StatusOK {
-		return nil, errors.New("internal user api error")
-	}
-
-	user := new(model.User)
-	if err := json.NewDecoder(response.Body).Decode(user); err != nil {
+	switch response.StatusCode {
+	case http.StatusBadRequest:
+		return nil, UserAPIBadRequest
+	case http.StatusInternalServerError:
 		return nil, err
 	}
 
-	return user, nil
+	var user model.User
+	if err := json.NewDecoder(response.Body).Decode(&user); err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }

@@ -59,8 +59,13 @@ func (r *userRoutes) create(c *gin.Context) {
 
 	user, err := r.service.Create(input.Passport)
 	if err != nil {
-		r.logger.Error("failed to create user", err)
-		internalServerErrorResponse(c)
+		switch {
+		case errors.Is(err, service.UserAPIBadRequest):
+			errorResponse(c, http.StatusBadRequest, "user not found")
+		default:
+			r.logger.Error("failed to create user", err)
+			internalServerErrorResponse(c)
+		}
 		return
 	}
 
