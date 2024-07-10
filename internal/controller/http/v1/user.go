@@ -224,6 +224,19 @@ func (r *userRoutes) get(c *gin.Context) {
 	c.JSON(http.StatusOK, users)
 }
 
+// getById
+//
+//	@Summary		Get user
+//	@Description	Get user by id
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		int			true	"User ID"	example(1)	minimum(1)
+//	@Success		200			{object}		model.User
+//	@Success		204
+//	@Failure		400			{object}	http.Response
+//	@Failure		500			{object}	http.InternalServerErrorResponse
+//	@Router			/users/{id} [get]
 func (r *userRoutes) getById(c *gin.Context) {
 	id, err := readIDParam(c)
 	if err != nil {
