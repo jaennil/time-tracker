@@ -156,6 +156,7 @@ func (r *userRoutes) update(c *gin.Context) {
 		}
 		return
 	}
+	userId := user.Id
 
 	if err = c.ShouldBindJSON(user); err != nil {
 		r.logger.Debug("update user failed to bind to json", zap.Any("user", user))
@@ -168,6 +169,7 @@ func (r *userRoutes) update(c *gin.Context) {
 		errorResponse(c, http.StatusBadRequest, "invalid user data")
 		return
 	}
+	user.Id = userId
 
 	err = r.service.Update(id, user)
 	if err != nil {
