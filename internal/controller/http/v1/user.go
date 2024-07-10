@@ -171,6 +171,19 @@ func (r *userRoutes) update(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
+// get users
+//
+//	@Summary		Get users
+//	@Description	Retrieve users info with filtering and pagination support
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			pagination	query		model.Pagination	false	"Pagination"
+//	@Param			filter	query		model.User	false	"Filter"
+//	@Success		200			{array}		model.User
+//	@Failure		400			{object}	http.Response
+//	@Failure		500			{object}	http.InternalServerErrorResponse
+//	@Router			/users [get]
 func (r *userRoutes) get(c *gin.Context) {
 	var pagination model.Pagination
 	if err := c.ShouldBindQuery(&pagination); err != nil {

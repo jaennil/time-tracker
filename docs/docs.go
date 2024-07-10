@@ -22,6 +22,108 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/users": {
+            "get": {
+                "description": "Retrieve users info with filtering and pagination support",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get users",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "example": 1,
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "example": 10,
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "г. Москва, ул. Ленина, д. 5, кв. 1",
+                        "name": "address",
+                        "in": "query"
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "example": 1,
+                        "name": "id",
+                        "in": "query"
+                    },
+                    {
+                        "maxLength": 255,
+                        "type": "string",
+                        "example": "Иван",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "maxLength": 6,
+                        "minLength": 6,
+                        "type": "string",
+                        "example": "567890",
+                        "name": "passport_number",
+                        "in": "query"
+                    },
+                    {
+                        "maxLength": 4,
+                        "minLength": 4,
+                        "type": "string",
+                        "example": "1234",
+                        "name": "passport_series",
+                        "in": "query"
+                    },
+                    {
+                        "maxLength": 255,
+                        "type": "string",
+                        "example": "Иванович",
+                        "name": "patronymic",
+                        "in": "query"
+                    },
+                    {
+                        "maxLength": 255,
+                        "type": "string",
+                        "example": "Иванов",
+                        "name": "surname",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.User"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Create user by passport number",
                 "consumes": [
@@ -203,8 +305,8 @@ const docTemplate = `{
                     "example": "г. Москва, ул. Ленина, д. 5, кв. 1"
                 },
                 "id": {
-                    "description": "TODO: find out why validate have omitempty here",
                     "type": "integer",
+                    "minimum": 1,
                     "example": 1
                 },
                 "name": {
@@ -214,10 +316,14 @@ const docTemplate = `{
                 },
                 "passport_number": {
                     "type": "string",
+                    "maxLength": 6,
+                    "minLength": 6,
                     "example": "567890"
                 },
                 "passport_series": {
                     "type": "string",
+                    "maxLength": 4,
+                    "minLength": 4,
                     "example": "1234"
                 },
                 "patronymic": {
