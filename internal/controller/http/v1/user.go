@@ -5,12 +5,11 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5"
 	"github.com/jaennil/time-tracker/internal/model"
+	"net/http"
 	"strconv"
 
-	"github.com/jaennil/time-tracker/internal/repository/postgres"
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"github.com/jaennil/time-tracker/internal/repository/postgres"
 	"github.com/jaennil/time-tracker/internal/service"
 	"github.com/jaennil/time-tracker/pkg/logger"
 )
@@ -26,7 +25,7 @@ func NewUserRoutes(handler *gin.RouterGroup, userService service.User, log logge
 
 	users := handler.Group("/users")
 	{
-		users.POST("", routes.create)
+		users.POST("", routes.Create)
 		users.DELETE(":id", routes.delete)
 		users.PATCH(":id", routes.update)
 		users.GET("", routes.get)
@@ -34,10 +33,20 @@ func NewUserRoutes(handler *gin.RouterGroup, userService service.User, log logge
 	}
 }
 
-func (r *userRoutes) create(c *gin.Context) {
-	var input struct {
-		Passport string `json:"passportNumber" binding:"required" validate:"passport"`
-	}
+// Create
+//
+// @Summary		Create a user
+// @Description	Create user by passport number
+// @Tags			users
+// @Accept			json
+// @Produce		json
+// @Param			passportNumber	body		model.CreateUser	true	"Full Passport Number"
+// @Success		200				{object}	model.User
+// @Failure		400				{object}	http.Response
+// @Failure		500				{object}	http.InternalServerErrorResponse
+// @Router			/users [post]
+func (r *userRoutes) Create(c *gin.Context) {
+	var input model.CreateUser
 	if err := c.ShouldBindJSON(&input); err != nil {
 		errorResponse(c, http.StatusBadRequest, "invalid or no passport data")
 		return
@@ -55,7 +64,7 @@ func (r *userRoutes) create(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "user created", "user": user})
+	c.JSON(http.StatusCreated, user)
 }
 
 func (r *userRoutes) delete(c *gin.Context) {

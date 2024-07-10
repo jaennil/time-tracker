@@ -8,11 +8,14 @@ import (
 	"github.com/jaennil/time-tracker/internal/app"
 )
 
-//	@title			Time Tracker API
-//	@version		1.0
+//	@title		Time Tracker API
+//	@version	1.0
 
-// @host		localhost:8081
-// @BasePath	/api/v1
+//	@host		localhost:8081
+//	@BasePath	/v1
+
+//	@accept		json
+//	@produce	json
 
 func main() {
 	cfg, err := config.NewConfig()

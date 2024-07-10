@@ -1,8 +1,92 @@
-basePath: /api/v1
+basePath: /v1
+consumes:
+- application/json
+definitions:
+  http.InternalServerErrorResponse:
+    properties:
+      error:
+        example: the server encountered a problem and could not process your request
+        type: string
+    type: object
+  http.Response:
+    properties:
+      error:
+        example: message
+        type: string
+    type: object
+  model.CreateUser:
+    properties:
+      passportNumber:
+        example: 1234 567890
+        maxLength: 11
+        minLength: 11
+        type: string
+    required:
+    - passportNumber
+    type: object
+  model.User:
+    properties:
+      address:
+        example: г. Москва, ул. Ленина, д. 5, кв. 1
+        type: string
+      id:
+        example: 1
+        type: integer
+      name:
+        example: Иван
+        maxLength: 255
+        type: string
+      passport_number:
+        example: "567890"
+        type: string
+      passport_series:
+        example: "1234"
+        type: string
+      patronymic:
+        example: Иванович
+        maxLength: 255
+        type: string
+      surname:
+        example: Иванов
+        maxLength: 255
+        type: string
+    type: object
 host: localhost:8081
 info:
   contact: {}
   title: Time Tracker API
   version: "1.0"
-paths: {}
+paths:
+  /users:
+    post:
+      consumes:
+      - application/json
+      description: Create user by passport number
+      parameters:
+      - description: Full Passport Number
+        in: body
+        name: passportNumber
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreateUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.InternalServerErrorResponse'
+      summary: Create a user
+      tags:
+      - users
+produces:
+- application/json
 swagger: "2.0"

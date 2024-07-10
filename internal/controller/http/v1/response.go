@@ -5,12 +5,16 @@ import (
 	"net/http"
 )
 
-type response struct {
+type Response struct {
 	Error string `json:"error" example:"message"`
 }
 
+type InternalServerErrorResponse struct {
+	Error string `json:"error" example:"the server encountered a problem and could not process your request"`
+}
+
 func errorResponse(c *gin.Context, code int, msg string) {
-	c.AbortWithStatusJSON(code, response{msg})
+	c.AbortWithStatusJSON(code, Response{msg})
 }
 
 func NotFoundResponse(c *gin.Context) {
