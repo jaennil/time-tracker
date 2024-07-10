@@ -15,7 +15,7 @@ type Task struct {
 
 type StartTask struct {
 	UserId int64  `json:"user_id" binding:"required" validate:"gt=0" example:"1" minimum:"1"`
-	Name   string `json:"name" binding:"required" validate:"min=1,max=255" example:"do stuff"`
+	Name   string `json:"name" binding:"required" validate:"min=1,max=255" example:"do stuff" minLength:"1" maxLength:"255"`
 }
 
 type EndTask struct {
@@ -32,4 +32,9 @@ type PrettyActivity struct {
 	Name    string  `json:"name"`
 	Hours   int     `json:"hours"`
 	Minutes float64 `json:"minutes"`
+}
+
+type Period struct {
+	StartTime time.Time `form:"start_time" binding:"required" time_format:"2006-01-02T15:04:05Z" format:"date-time" example:"2024-01-02T15:04:05Z"`
+	EndTime   time.Time `form:"end_time" binding:"required" time_format:"2006-01-02T15:04:05Z" format:"date-time" example:"2025-01-02T15:04:05Z"`
 }

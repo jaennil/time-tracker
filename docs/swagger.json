@@ -14,6 +14,71 @@
     "host": "localhost:8081",
     "basePath": "/v1",
     "paths": {
+        "/tasks/activity/{user_id}": {
+            "get": {
+                "description": "Получение трудозатрат по пользователю за период задача-сумма часов и минут с сортировкой от большей затраты к меньшей",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Task activity",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "example": 1,
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-01-02T15:04:05Z",
+                        "name": "end_time",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-02T15:04:05Z",
+                        "name": "start_time",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.PrettyActivity"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/tasks/end": {
             "post": {
                 "description": "End task by task ID and user ID",
@@ -445,6 +510,20 @@
                     "type": "integer",
                     "minimum": 1,
                     "example": 1
+                }
+            }
+        },
+        "model.PrettyActivity": {
+            "type": "object",
+            "properties": {
+                "hours": {
+                    "type": "integer"
+                },
+                "minutes": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
                 }
             }
         },
