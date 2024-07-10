@@ -35,16 +35,16 @@ func NewUserRoutes(handler *gin.RouterGroup, userService service.User, log logge
 
 // create user
 //
-// @Summary		Create a user
-// @Description	Create user by passport number
-// @Tags			users
-// @Accept			json
-// @Produce		json
-// @Param			passportNumber	body		model.CreateUser	true	"Full Passport Number"
-// @Success		200				{object}	model.User
-// @Failure		400				{object}	http.Response
-// @Failure		500				{object}	http.InternalServerErrorResponse
-// @Router			/users [post]
+//	@Summary		Create a user
+//	@Description	Create user by passport number
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			passportNumber	body		model.CreateUser	true	"Full Passport Number"
+//	@Success		200				{object}	model.User
+//	@Failure		400				{object}	http.Response
+//	@Failure		500				{object}	http.InternalServerErrorResponse
+//	@Router			/users [post]
 func (r *userRoutes) create(c *gin.Context) {
 	var input model.CreateUser
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -69,16 +69,16 @@ func (r *userRoutes) create(c *gin.Context) {
 
 // delete user
 //
-// @Summary		Delete a user
-// @Description	Delete user by id
-// @Tags			users
-// @Accept			json
-// @Produce		json
-// @Param id path int true "User ID"
-// @Success		204
-// @Failure		400				{object}	http.Response
-// @Failure		500				{object}	http.InternalServerErrorResponse
-// @Router			/users/{id} [delete]
+//	@Summary		Delete a user
+//	@Description	Delete user by id
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path	int	true	"User ID"
+//	@Success		204
+//	@Failure		400	{object}	http.Response
+//	@Failure		500	{object}	http.InternalServerErrorResponse
+//	@Router			/users/{id} [delete]
 func (r *userRoutes) delete(c *gin.Context) {
 	id, err := readIDParam(c)
 	if err != nil {
@@ -106,6 +106,19 @@ func (r *userRoutes) delete(c *gin.Context) {
 	noContentResponse(c)
 }
 
+// update user
+//
+//	@Summary		Update a user
+//	@Description	Update all or several user fields
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		int			true	"User ID"	example(1)	minimum(1)
+//	@Param			user	body		model.User	true	"User"
+//	@Success		200		{object}	model.User
+//	@Failure		400		{object}	http.Response
+//	@Failure		500		{object}	http.InternalServerErrorResponse
+//	@Router			/users/{id} [patch]
 func (r *userRoutes) update(c *gin.Context) {
 	id, err := readIDParam(c)
 	if err != nil {
@@ -153,7 +166,7 @@ func (r *userRoutes) update(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "user updated successfully", "user": user})
+	c.JSON(http.StatusOK, user)
 }
 
 func (r *userRoutes) get(c *gin.Context) {
