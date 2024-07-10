@@ -116,9 +116,9 @@ func (r *taskRoutes) end(c *gin.Context) {
 //	@Tags			tasks
 //	@Accept			json
 //	@Produce		json
-//	@Param			user_id	path	int			true	"User ID"	example(1)	minimum(1)
+//	@Param			user_id	path		int				true	"User ID"	example(1)	minimum(1)
 //	@Param			period	query		model.Period	true	"Period"
-//	@Success		200		{array}	model.PrettyActivity
+//	@Success		200		{array}		model.PrettyActivity
 //	@Failure		400		{object}	http.Response
 //	@Failure		500		{object}	http.InternalServerErrorResponse
 //	@Router			/tasks/activity/{user_id} [get]
