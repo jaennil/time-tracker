@@ -338,8 +338,6 @@ paths:
         name: id
         required: true
         type: integer
-      produces:
-      - application/json
       responses:
         "204":
           description: No Content

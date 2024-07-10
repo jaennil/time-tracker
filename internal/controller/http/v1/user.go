@@ -78,14 +78,11 @@ func (r *userRoutes) create(c *gin.Context) {
 //	@Description	Delete user by id
 //	@Tags			users
 //	@Accept			json
-//	@Produce		json
 //	@Param			id	path	int	true	"User ID"
 //	@Success		204
 //	@Failure		400	{object}	http.Response
 //	@Failure		500	{object}	http.InternalServerErrorResponse
 //	@Router			/users/{id} [delete]
-//
-// TODO: maybe delete produce json because return code is 204
 func (r *userRoutes) delete(c *gin.Context) {
 	id, err := readIDParam(c)
 	if err != nil {

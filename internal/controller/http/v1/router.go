@@ -9,7 +9,8 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func NewRouter(handler *gin.Engine, services *service.Service, log logger.Loggable, validate *validator.Validate) {
+func InitRouter(handler *gin.Engine, services *service.Service, log logger.Loggable, validate *validator.Validate) {
+	handler.NoRoute(NotFoundResponse)
 	v1 := handler.Group("/v1")
 	{
 		NewUserRoutes(v1, services.User, log, validate)

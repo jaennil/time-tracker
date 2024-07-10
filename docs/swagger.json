@@ -372,9 +372,6 @@
                 "consumes": [
                     "application/json"
                 ],
-                "produces": [
-                    "application/json"
-                ],
                 "tags": [
                     "users"
                 ],

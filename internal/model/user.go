@@ -1,6 +1,5 @@
 package model
 
-// TODO: find out why validate have omitempty here
 type User struct {
 	Id             int64   `json:"id" db:"user_id" example:"1" minimum:"1"`
 	PassportSeries string  `json:"passport_series" validate:"omitempty,number,len=4" db:"passport_series" example:"1234" minLength:"4" maxLength:"4"`

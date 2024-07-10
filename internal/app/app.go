@@ -27,19 +27,20 @@ import (
 
 func Run(config *config.Config) {
 	log := logger.NewZapLogger()
-	log.Info("initialized logger")
-	log.Debug("global app config: ", zap.Any("config", config))
-
-	validate, err := validator.NewValidator()
-	if err != nil {
-		log.Fatal("failed to initialize validator", err)
-	}
-
 	if zapLogger, ok := log.(*logger.ZapLogger); ok {
 		// no need to handle Sync error https://github.com/uber-go/zap/issues/328
 		defer func() {
 			_ = zapLogger.Sync()
 		}()
+	}
+	log.Info("initialized logger")
+
+	log.Debug("app config: ", zap.Any("config", config))
+
+	log.Info("initializing validator")
+	validate, err := validator.NewValidator()
+	if err != nil {
+		log.Fatal("failed to initialize validator", err)
 	}
 
 	log.Info("connecting to database")
@@ -77,8 +78,7 @@ func Run(config *config.Config) {
 	repositories := repository.NewRepository(db)
 	services := service.New(repositories, userApi)
 	handler := gin.Default()
-	handler.NoRoute(http.NotFoundResponse)
-	http.NewRouter(handler, services, log, validate)
+	http.InitRouter(handler, services, log, validate)
 	httpServer := httpserver.New(handler, httpserver.Port(config.Port))
 	docs.SwaggerInfo.Host = "localhost:" + strconv.Itoa(config.Port)
 

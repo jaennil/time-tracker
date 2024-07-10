@@ -379,9 +379,6 @@ const docTemplate = `{
                 "consumes": [
                     "application/json"
                 ],
-                "produces": [
-                    "application/json"
-                ],
                 "tags": [
                     "users"
                 ],
