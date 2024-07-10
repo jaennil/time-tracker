@@ -41,7 +41,7 @@ func NewUserRoutes(handler *gin.RouterGroup, userService service.User, log logge
 //	@Accept			json
 //	@Produce		json
 //	@Param			passportNumber	body		model.CreateUser	true	"Full Passport Number"
-//	@Success		200				{object}	model.User
+//	@Success		200				{object}	model.User "user created"
 //	@Failure		400				{object}	http.Response
 //	@Failure		500				{object}	http.InternalServerErrorResponse
 //	@Router			/users [post]
@@ -117,7 +117,7 @@ func (r *userRoutes) delete(c *gin.Context) {
 //	@Produce		json
 //	@Param			id		path		int			true	"User ID"	example(1)	minimum(1)
 //	@Param			user	body		model.User	true	"User"
-//	@Success		200		{object}	model.User
+//	@Success		200		{object}	model.User "user updated"
 //	@Failure		400		{object}	http.Response
 //	@Failure		500		{object}	http.InternalServerErrorResponse
 //	@Router			/users/{id} [patch]

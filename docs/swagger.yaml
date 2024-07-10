@@ -24,6 +24,41 @@ definitions:
     required:
     - passportNumber
     type: object
+  model.StartTask:
+    properties:
+      name:
+        example: do stuff
+        maxLength: 255
+        minLength: 1
+        type: string
+      user_id:
+        example: 1
+        minimum: 1
+        type: integer
+    required:
+    - name
+    - user_id
+    type: object
+  model.Task:
+    properties:
+      end_time:
+        example: "2025-07-10T07:00:43.047939731+03:00"
+        type: string
+      name:
+        example: do stuff
+        type: string
+      start_time:
+        example: "2024-07-10T07:00:43.047939731+03:00"
+        type: string
+      task_id:
+        example: 1
+        minimum: 1
+        type: integer
+      user_id:
+        example: 1
+        minimum: 1
+        type: integer
+    type: object
   model.User:
     properties:
       address:
@@ -62,6 +97,36 @@ info:
   title: Time Tracker API
   version: "1.0"
 paths:
+  /tasks/start:
+    post:
+      consumes:
+      - application/json
+      description: Start task with name for specified user by id
+      parameters:
+      - description: task data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/model.StartTask'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: task started
+          schema:
+            $ref: '#/definitions/model.Task'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.InternalServerErrorResponse'
+      summary: Start task
+      tags:
+      - tasks
   /users:
     get:
       consumes:
@@ -149,7 +214,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: user created
           schema:
             $ref: '#/definitions/model.User'
         "400":
@@ -244,7 +309,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: user updated
           schema:
             $ref: '#/definitions/model.User'
         "400":

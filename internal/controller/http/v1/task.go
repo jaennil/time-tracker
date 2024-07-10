@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5"
+	"github.com/jaennil/time-tracker/internal/model"
 	"github.com/jaennil/time-tracker/internal/repository/postgres"
 	"github.com/jaennil/time-tracker/internal/service"
 	"github.com/jaennil/time-tracker/pkg/logger"
@@ -31,11 +32,20 @@ func NewTaskRoutes(handler *gin.RouterGroup, taskService service.Task, log logge
 	}
 }
 
+// start task
+//
+//	@Summary		Start task
+//	@Description	Start task with name for specified user by id
+//	@Tags			tasks
+//	@Accept			json
+//	@Produce		json
+//	@Param			input	body		model.StartTask	true	"task data"
+//	@Success		200				{object}	model.Task "task started"
+//	@Failure		400				{object}	http.Response
+//	@Failure		500				{object}	http.InternalServerErrorResponse
+//	@Router			/tasks/start [post]
 func (r *taskRoutes) start(c *gin.Context) {
-	var input struct {
-		UserId int64  `json:"user_id" binding:"required" validate:"gt=0"`
-		Name   string `json:"name" binding:"required" validate:"min=1,max=255"`
-	}
+	var input model.StartTask
 	if err := c.ShouldBindJSON(&input); err != nil {
 		errorResponse(c, http.StatusBadRequest, "invalid task data")
 		return
@@ -57,7 +67,7 @@ func (r *taskRoutes) start(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, gin.H{"message": "task started", "task": task})
+	c.JSON(http.StatusOK, task)
 }
 
 func (r *taskRoutes) end(c *gin.Context) {
@@ -88,7 +98,7 @@ func (r *taskRoutes) end(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, gin.H{"message": "task ended", "task": task})
+	c.JSON(http.StatusOK, gin.H{"message": "task ended", "task": task})
 }
 
 func (r *taskRoutes) activity(c *gin.Context) {

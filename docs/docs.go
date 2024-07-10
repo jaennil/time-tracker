@@ -21,6 +21,52 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/tasks/start": {
+            "post": {
+                "description": "Start task with name for specified user by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Start task",
+                "parameters": [
+                    {
+                        "description": "task data",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.StartTask"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "task started",
+                        "schema": {
+                            "$ref": "#/definitions/model.Task"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/users": {
             "get": {
                 "description": "Retrieve users info with filtering and pagination support",
@@ -149,7 +195,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "user created",
                         "schema": {
                             "$ref": "#/definitions/model.User"
                         }
@@ -290,7 +336,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "user updated",
                         "schema": {
                             "$ref": "#/definitions/model.User"
                         }
@@ -341,6 +387,53 @@ const docTemplate = `{
                     "maxLength": 11,
                     "minLength": 11,
                     "example": "1234 567890"
+                }
+            }
+        },
+        "model.StartTask": {
+            "type": "object",
+            "required": [
+                "name",
+                "user_id"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1,
+                    "example": "do stuff"
+                },
+                "user_id": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 1
+                }
+            }
+        },
+        "model.Task": {
+            "type": "object",
+            "properties": {
+                "end_time": {
+                    "type": "string",
+                    "example": "2025-07-10T07:00:43.047939731+03:00"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "do stuff"
+                },
+                "start_time": {
+                    "type": "string",
+                    "example": "2024-07-10T07:00:43.047939731+03:00"
+                },
+                "task_id": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 1
+                },
+                "user_id": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 1
                 }
             }
         },
