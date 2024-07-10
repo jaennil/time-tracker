@@ -79,6 +79,8 @@ func (r *userRoutes) create(c *gin.Context) {
 //	@Failure		400	{object}	http.Response
 //	@Failure		500	{object}	http.InternalServerErrorResponse
 //	@Router			/users/{id} [delete]
+//
+// TODO: maybe delete produce json because return code is 204
 func (r *userRoutes) delete(c *gin.Context) {
 	id, err := readIDParam(c)
 	if err != nil {
@@ -170,27 +172,13 @@ func (r *userRoutes) update(c *gin.Context) {
 }
 
 func (r *userRoutes) get(c *gin.Context) {
-	pageStr := c.DefaultQuery("page", "1")
-	page, err := strconv.Atoi(pageStr)
-	if err != nil {
-		errorResponse(c, http.StatusBadRequest, "invalid page number")
+	var pagination model.Pagination
+	if err := c.ShouldBindQuery(&pagination); err != nil {
+		errorResponse(c, http.StatusBadRequest, "invalid pagination data")
 		return
 	}
-	err = r.validate.Var(page, "min=0")
-	if err != nil {
-		errorResponse(c, http.StatusBadRequest, "page must be positive number")
-		return
-	}
-
-	pageSizeStr := c.DefaultQuery("page_size", "100")
-	pageSize, err := strconv.Atoi(pageSizeStr)
-	if err != nil {
-		errorResponse(c, http.StatusBadRequest, "invalid page size")
-		return
-	}
-	err = r.validate.Var(pageSize, "min=0")
-	if err != nil {
-		errorResponse(c, http.StatusBadRequest, "page size must be positive number")
+	if err := r.validate.Struct(pagination); err != nil {
+		errorResponse(c, http.StatusBadRequest, "invalid pagination data")
 		return
 	}
 
@@ -213,7 +201,6 @@ func (r *userRoutes) get(c *gin.Context) {
 		Address:        c.Query("address"),
 	}
 
-	pagination := model.Pagination{Page: page, PageSize: pageSize}
 	users, err := r.service.Get(&pagination, &filter)
 	if err != nil {
 		r.logger.Error("failed to get users", err)
