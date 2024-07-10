@@ -21,6 +21,52 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/tasks/end": {
+            "post": {
+                "description": "End task by task ID and user ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "End task",
+                "parameters": [
+                    {
+                        "description": "Input",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.EndTask"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "task ended",
+                        "schema": {
+                            "$ref": "#/definitions/model.Task"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.InternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/tasks/start": {
             "post": {
                 "description": "Start task with name for specified user by id",
@@ -387,6 +433,25 @@ const docTemplate = `{
                     "maxLength": 11,
                     "minLength": 11,
                     "example": "1234 567890"
+                }
+            }
+        },
+        "model.EndTask": {
+            "type": "object",
+            "required": [
+                "task_id",
+                "user_id"
+            ],
+            "properties": {
+                "task_id": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 1
+                },
+                "user_id": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 1
                 }
             }
         },

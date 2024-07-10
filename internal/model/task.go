@@ -18,6 +18,11 @@ type StartTask struct {
 	Name   string `json:"name" binding:"required" validate:"min=1,max=255" example:"do stuff"`
 }
 
+type EndTask struct {
+	TaskId int64 `json:"task_id" binding:"required" validate:"gt=0" example:"1" minimum:"1"`
+	UserId int64 `json:"user_id" binding:"required" validate:"gt=0" example:"1" minimum:"1"`
+}
+
 type Activity struct {
 	Name     string        `db:"name"`
 	Duration time.Duration `db:"duration"`

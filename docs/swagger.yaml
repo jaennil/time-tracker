@@ -24,6 +24,20 @@ definitions:
     required:
     - passportNumber
     type: object
+  model.EndTask:
+    properties:
+      task_id:
+        example: 1
+        minimum: 1
+        type: integer
+      user_id:
+        example: 1
+        minimum: 1
+        type: integer
+    required:
+    - task_id
+    - user_id
+    type: object
   model.StartTask:
     properties:
       name:
@@ -97,6 +111,36 @@ info:
   title: Time Tracker API
   version: "1.0"
 paths:
+  /tasks/end:
+    post:
+      consumes:
+      - application/json
+      description: End task by task ID and user ID
+      parameters:
+      - description: Input
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/model.EndTask'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: task ended
+          schema:
+            $ref: '#/definitions/model.Task'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.InternalServerErrorResponse'
+      summary: End task
+      tags:
+      - tasks
   /tasks/start:
     post:
       consumes:

@@ -40,9 +40,9 @@ func NewTaskRoutes(handler *gin.RouterGroup, taskService service.Task, log logge
 //	@Accept			json
 //	@Produce		json
 //	@Param			input	body		model.StartTask	true	"task data"
-//	@Success		200				{object}	model.Task "task started"
-//	@Failure		400				{object}	http.Response
-//	@Failure		500				{object}	http.InternalServerErrorResponse
+//	@Success		200		{object}	model.Task		"task started"
+//	@Failure		400		{object}	http.Response
+//	@Failure		500		{object}	http.InternalServerErrorResponse
 //	@Router			/tasks/start [post]
 func (r *taskRoutes) start(c *gin.Context) {
 	var input model.StartTask
@@ -70,11 +70,20 @@ func (r *taskRoutes) start(c *gin.Context) {
 	c.JSON(http.StatusOK, task)
 }
 
+// end task
+//
+//	@Summary		End task
+//	@Description	End task by task ID and user ID
+//	@Tags			tasks
+//	@Accept			json
+//	@Produce		json
+//	@Param			input	body		model.EndTask	true	"Input"
+//	@Success		200		{object}	model.Task		"task ended"
+//	@Failure		400		{object}	http.Response
+//	@Failure		500		{object}	http.InternalServerErrorResponse
+//	@Router			/tasks/end [post]
 func (r *taskRoutes) end(c *gin.Context) {
-	var input struct {
-		TaskId int64 `json:"task_id" binding:"required" validate:"gt=0"`
-		UserId int64 `json:"user_id" binding:"required" validate:"gt=0"`
-	}
+	var input model.EndTask
 	if err := c.ShouldBindJSON(&input); err != nil {
 		errorResponse(c, http.StatusBadRequest, "invalid task data")
 		return
@@ -98,7 +107,7 @@ func (r *taskRoutes) end(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "task ended", "task": task})
+	c.JSON(http.StatusOK, task)
 }
 
 func (r *taskRoutes) activity(c *gin.Context) {

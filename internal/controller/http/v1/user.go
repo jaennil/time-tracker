@@ -41,7 +41,7 @@ func NewUserRoutes(handler *gin.RouterGroup, userService service.User, log logge
 //	@Accept			json
 //	@Produce		json
 //	@Param			passportNumber	body		model.CreateUser	true	"Full Passport Number"
-//	@Success		200				{object}	model.User "user created"
+//	@Success		200				{object}	model.User			"user created"
 //	@Failure		400				{object}	http.Response
 //	@Failure		500				{object}	http.InternalServerErrorResponse
 //	@Router			/users [post]
@@ -117,7 +117,7 @@ func (r *userRoutes) delete(c *gin.Context) {
 //	@Produce		json
 //	@Param			id		path		int			true	"User ID"	example(1)	minimum(1)
 //	@Param			user	body		model.User	true	"User"
-//	@Success		200		{object}	model.User "user updated"
+//	@Success		200		{object}	model.User	"user updated"
 //	@Failure		400		{object}	http.Response
 //	@Failure		500		{object}	http.InternalServerErrorResponse
 //	@Router			/users/{id} [patch]
@@ -179,7 +179,7 @@ func (r *userRoutes) update(c *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			pagination	query		model.Pagination	false	"Pagination"
-//	@Param			filter	query		model.User	false	"Filter"
+//	@Param			filter		query		model.User			false	"Filter"
 //	@Success		200			{array}		model.User
 //	@Failure		400			{object}	http.Response
 //	@Failure		500			{object}	http.InternalServerErrorResponse
@@ -231,11 +231,11 @@ func (r *userRoutes) get(c *gin.Context) {
 //	@Tags			users
 //	@Accept			json
 //	@Produce		json
-//	@Param			id		path		int			true	"User ID"	example(1)	minimum(1)
-//	@Success		200			{object}		model.User
+//	@Param			id	path		int	true	"User ID"	example(1)	minimum(1)
+//	@Success		200	{object}	model.User
 //	@Success		204
-//	@Failure		400			{object}	http.Response
-//	@Failure		500			{object}	http.InternalServerErrorResponse
+//	@Failure		400	{object}	http.Response
+//	@Failure		500	{object}	http.InternalServerErrorResponse
 //	@Router			/users/{id} [get]
 func (r *userRoutes) getById(c *gin.Context) {
 	id, err := readIDParam(c)
