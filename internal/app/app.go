@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/jaennil/time-tracker/docs"
 	"github.com/jaennil/time-tracker/pkg/validator"
 	"go.uber.org/zap"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
 	"github.com/gin-gonic/gin"
@@ -78,6 +80,7 @@ func Run(config *config.Config) {
 	handler.NoRoute(http.NotFoundResponse)
 	http.NewRouter(handler, services, log, validate)
 	httpServer := httpserver.New(handler, httpserver.Port(config.Port))
+	docs.SwaggerInfo.Host = "localhost:" + strconv.Itoa(config.Port)
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)

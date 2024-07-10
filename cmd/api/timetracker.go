@@ -4,15 +4,21 @@ import (
 	"log"
 
 	"github.com/jaennil/time-tracker/config"
+	_ "github.com/jaennil/time-tracker/docs"
 	"github.com/jaennil/time-tracker/internal/app"
 )
 
-func main() {
+//	@title			Time Tracker API
+//	@version		1.0
 
-	config, err := config.NewConfig()
+// @host		localhost:8081
+// @BasePath	/api/v1
+
+func main() {
+	cfg, err := config.NewConfig()
 	if err != nil {
 		log.Fatalf("fatal error while creating config: %s", err)
 	}
 
-	app.Run(config)
+	app.Run(cfg)
 }
