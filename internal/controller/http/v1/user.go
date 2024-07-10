@@ -5,6 +5,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5"
 	"github.com/jaennil/time-tracker/internal/model"
+	"go.uber.org/zap"
 	"net/http"
 	"strconv"
 
@@ -48,11 +49,13 @@ func NewUserRoutes(handler *gin.RouterGroup, userService service.User, log logge
 func (r *userRoutes) create(c *gin.Context) {
 	var input model.CreateUser
 	if err := c.ShouldBindJSON(&input); err != nil {
+		r.logger.Debug("create user", zap.Any("input", input))
 		errorResponse(c, http.StatusBadRequest, "invalid or no passport data")
 		return
 	}
 	err := r.validate.Struct(input)
 	if err != nil {
+		r.logger.Debug("create user after validate", zap.Any("input", input))
 		errorResponse(c, http.StatusBadRequest, "invalid passport format")
 		return
 	}
@@ -61,6 +64,7 @@ func (r *userRoutes) create(c *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, service.UserAPIBadRequest):
+			r.logger.Debug("create user", zap.Any("user", user))
 			errorResponse(c, http.StatusBadRequest, "user not found")
 		default:
 			r.logger.Error("failed to create user", err)
@@ -86,11 +90,13 @@ func (r *userRoutes) create(c *gin.Context) {
 func (r *userRoutes) delete(c *gin.Context) {
 	id, err := readIDParam(c)
 	if err != nil {
+		r.logger.Debug("delete user", zap.Any("id", id))
 		errorResponse(c, http.StatusBadRequest, "invalid id")
 		return
 	}
 	err = r.validate.Var(id, "gt=0")
 	if err != nil {
+		r.logger.Debug("delete user failed to validate id", zap.Any("id", id))
 		errorResponse(c, http.StatusBadRequest, "invalid id")
 		return
 	}
@@ -99,6 +105,7 @@ func (r *userRoutes) delete(c *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, postgres.RecordNotFound):
+			r.logger.Debug("delete user record not found")
 			errorResponse(c, http.StatusBadRequest, "user not found")
 		default:
 			r.logger.Error("failed to delete user", err)
@@ -126,11 +133,13 @@ func (r *userRoutes) delete(c *gin.Context) {
 func (r *userRoutes) update(c *gin.Context) {
 	id, err := readIDParam(c)
 	if err != nil {
+		r.logger.Debug("update user", zap.Any("id", id))
 		errorResponse(c, http.StatusBadRequest, "invalid id")
 		return
 	}
 	err = r.validate.Var(id, "gt=0")
 	if err != nil {
+		r.logger.Debug("update user validate id failed", zap.Any("id", id))
 		errorResponse(c, http.StatusBadRequest, "invalid id")
 		return
 	}
@@ -139,6 +148,7 @@ func (r *userRoutes) update(c *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, pgx.ErrNoRows):
+			r.logger.Debug("update user no rows", zap.Any("user", user))
 			errorResponse(c, http.StatusBadRequest, "user not found")
 		default:
 			r.logger.Error("failed to update user", err)
@@ -148,12 +158,13 @@ func (r *userRoutes) update(c *gin.Context) {
 	}
 
 	if err = c.ShouldBindJSON(user); err != nil {
+		r.logger.Debug("update user failed to bind to json", zap.Any("user", user))
 		errorResponse(c, http.StatusBadRequest, "invalid json user data")
 		return
 	}
 	err = r.validate.Struct(user)
 	if err != nil {
-		r.logger.Error("failed to validate user data", err)
+		r.logger.Debug("update user failed to validate user data", err)
 		errorResponse(c, http.StatusBadRequest, "invalid user data")
 		return
 	}
@@ -162,6 +173,7 @@ func (r *userRoutes) update(c *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, postgres.RecordNotFound):
+			r.logger.Debug("update user record not found", zap.Any("user", user), zap.Any("id", id))
 			errorResponse(c, http.StatusBadRequest, "user not found")
 		default:
 			r.logger.Error("failed to update user", err)
@@ -189,10 +201,12 @@ func (r *userRoutes) update(c *gin.Context) {
 func (r *userRoutes) get(c *gin.Context) {
 	var pagination model.Pagination
 	if err := c.ShouldBindQuery(&pagination); err != nil {
+		r.logger.Debug("get users failed to bind pagination", err)
 		errorResponse(c, http.StatusBadRequest, "invalid pagination data")
 		return
 	}
 	if err := r.validate.Struct(pagination); err != nil {
+		r.logger.Debug("get users failed validate pagination", err)
 		errorResponse(c, http.StatusBadRequest, "invalid pagination data")
 		return
 	}
@@ -200,11 +214,11 @@ func (r *userRoutes) get(c *gin.Context) {
 	userIdStr := c.DefaultQuery("user_id", "0")
 	userId, err := strconv.ParseInt(userIdStr, 10, 64)
 	if err != nil {
+		r.logger.Debug("get users failed to convert user id to int", err)
 		errorResponse(c, http.StatusBadRequest, "invalid user id")
 		return
 	}
 
-	// TODO: validate filters
 	patronymic := c.Query("patronymic")
 	filter := model.User{
 		Id:             userId,
@@ -242,11 +256,13 @@ func (r *userRoutes) get(c *gin.Context) {
 func (r *userRoutes) getById(c *gin.Context) {
 	id, err := readIDParam(c)
 	if err != nil {
+		r.logger.Debug("get user by id failed to read id param", err)
 		errorResponse(c, http.StatusBadRequest, "invalid id")
 		return
 	}
 	err = r.validate.Var(id, "gt=0")
 	if err != nil {
+		r.logger.Debug("get user by id failed to validate id param", err)
 		errorResponse(c, http.StatusBadRequest, "invalid id")
 		return
 	}
@@ -255,6 +271,7 @@ func (r *userRoutes) getById(c *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, pgx.ErrNoRows):
+			r.logger.Debug("get user by id err no rows", err)
 			noContentResponse(c)
 		default:
 			r.logger.Error("failed to get user", err)
