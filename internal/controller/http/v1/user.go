@@ -25,7 +25,7 @@ func NewUserRoutes(handler *gin.RouterGroup, userService service.User, log logge
 
 	users := handler.Group("/users")
 	{
-		users.POST("", routes.Create)
+		users.POST("", routes.create)
 		users.DELETE(":id", routes.delete)
 		users.PATCH(":id", routes.update)
 		users.GET("", routes.get)
@@ -33,7 +33,7 @@ func NewUserRoutes(handler *gin.RouterGroup, userService service.User, log logge
 	}
 }
 
-// Create
+// create user
 //
 // @Summary		Create a user
 // @Description	Create user by passport number
@@ -45,7 +45,7 @@ func NewUserRoutes(handler *gin.RouterGroup, userService service.User, log logge
 // @Failure		400				{object}	http.Response
 // @Failure		500				{object}	http.InternalServerErrorResponse
 // @Router			/users [post]
-func (r *userRoutes) Create(c *gin.Context) {
+func (r *userRoutes) create(c *gin.Context) {
 	var input model.CreateUser
 	if err := c.ShouldBindJSON(&input); err != nil {
 		errorResponse(c, http.StatusBadRequest, "invalid or no passport data")
@@ -67,6 +67,18 @@ func (r *userRoutes) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, user)
 }
 
+// delete user
+//
+// @Summary		Delete a user
+// @Description	Delete user by id
+// @Tags			users
+// @Accept			json
+// @Produce		json
+// @Param id path int true "User ID"
+// @Success		204
+// @Failure		400				{object}	http.Response
+// @Failure		500				{object}	http.InternalServerErrorResponse
+// @Router			/users/{id} [delete]
 func (r *userRoutes) delete(c *gin.Context) {
 	id, err := readIDParam(c)
 	if err != nil {
@@ -91,7 +103,7 @@ func (r *userRoutes) delete(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "user deleted"})
+	noContentResponse(c)
 }
 
 func (r *userRoutes) update(c *gin.Context) {

@@ -30,6 +30,7 @@ definitions:
         example: г. Москва, ул. Ленина, д. 5, кв. 1
         type: string
       id:
+        description: 'TODO: find out why validate have omitempty here'
         example: 1
         type: integer
       name:
@@ -85,6 +86,33 @@ paths:
           schema:
             $ref: '#/definitions/http.InternalServerErrorResponse'
       summary: Create a user
+      tags:
+      - users
+  /users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete user by id
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.InternalServerErrorResponse'
+      summary: Delete a user
       tags:
       - users
 produces:
